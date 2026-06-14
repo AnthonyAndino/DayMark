@@ -13,14 +13,14 @@ async function getUserId(): Promise<number> {
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     if (!token ) throw new Error('No autenticado')
-    const payload = verifyToken(token)
+    const payload = await verifyToken(token)
     if (!payload) throw new Error('Token invalido')
+    if (typeof payload.userId !== 'number') throw new Error('Token invalido: userId ausente')
     return payload.userId
 }
 
-export async function createHabit(formData: { name: string }) {
-    const userId = await getUserId()
-    const { name } = HabitSchema.parse(formData)
+export async function createHabit(formData: { name: string, userId: number }) {
+    const { name, userId } = HabitSchema.extend({ userId: z.number() }).parse(formData)
 
     const habit = await prisma.habit.create({
         data: { name, userId }
@@ -38,8 +38,7 @@ export async function getHabits() {
     })
 }
 
-export async function toggleHabbitLog(habitId: number, date: Date) {
-    const userId = await getUserId()
+export async function toggleHabitLog(habitId: number, date: Date, userId: number) {
 
     const habit = await prisma.habit.findFirst({
         where: { id: habitId, userId }
