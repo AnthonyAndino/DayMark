@@ -69,6 +69,20 @@ export async function toggleHabitLog(habitId: number, date: Date, userId: number
     }
 }
 
+export async function deleteHabit(habitId: number) {
+    const userId = await getUserId()
+
+    const habit = await prisma.habit.findFirst({
+        where: { id: habitId, userId }
+    })
+    if (!habit) throw new Error('Hábito no encontrado')
+
+    await prisma.habitLog.deleteMany({ where: { habitId } })
+    await prisma.habit.delete({ where: { id: habitId } })
+
+    return { success: true }
+}
+
 export async function getStreak(habitId: number): Promise<number> {
     const userId = await getUserId()
 

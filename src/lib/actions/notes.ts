@@ -19,20 +19,29 @@ async function getUserId(): Promise<number> {
     return payload.userId
 }
 
-export async function upserNote(formData: { content: string, date: string }) {
+export async function createNote(formData: { content: string, date: string }) {
     const userId = await getUserId()
     const { content, date } = NoteSchema.parse(formData)
 
     const startOfDay = new Date(date)
     startOfDay.setHours(0, 0, 0, 0)
 
-    return prisma.dayNote.upsert({
-        where: {
-            userId_date: { userId, date: startOfDay }
-        },
-        update: { content },
-        create: { userId, date: startOfDay, content }
+    return prisma.dayNote.create({
+        data: { userId, date: startOfDay, content }
     })
+}
+
+export async function deleteNote(noteId: number) {
+    const userId = await getUserId()
+
+    const note = await prisma.dayNote.findFirst({
+        where: { id: noteId, userId }
+    })
+    if (!note) throw new Error('Nota no encontrada')
+
+    await prisma.dayNote.delete({ where: { id: noteId } })
+
+    return { success: true }
 }
 
 export async function getNoteByDate(date: string) {

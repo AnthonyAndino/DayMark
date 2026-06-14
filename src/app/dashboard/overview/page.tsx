@@ -2,11 +2,10 @@ import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
 import { verifyToken } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import Calendar from '@/components/Calendar'
-import AddHabit from '@/components/AddHabit'
 import { getStreak } from '@/lib/actions/habits'
+import OverviewView from '@/components/OverviewView'
 
-export default async function DashboardPage() {
+export default async function OverviewPage() {
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
     if (!token) redirect('/login')
@@ -50,17 +49,14 @@ export default async function DashboardPage() {
     )
 
     const serializedLogs = logs.map(l => ({ habitId: l.habitId, date: l.date.toISOString() }))
-    const serializedNotes = notes.map(n => ({ date: n.date.toISOString(), content: n.content }))
 
     return (
         <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--theme-bg)', color: 'var(--theme-fg)' }}>
-            <AddHabit userId={userId} />
-            <Calendar
+            <OverviewView
                 habits={habits}
                 logs={serializedLogs}
-                notes={serializedNotes}
                 streaks={streakResults}
-                userId={userId}
+                notesCount={notes.length}
                 userName={userName}
             />
         </div>
