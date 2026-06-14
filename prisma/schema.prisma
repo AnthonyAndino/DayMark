@@ -37,5 +37,7 @@ model DayNote {
   date DateTime
   content String
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
 }
 
