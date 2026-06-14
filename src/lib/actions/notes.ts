@@ -14,7 +14,7 @@ async function getUserId(): Promise<number> {
     const cookieStore = await cookies()
     const token = cookieStore.get('token',)?.value
     if (!token) throw new Error('No autenticado')
-    const payload = verifyToken(token)
+    const payload = await verifyToken(token)
     if (!payload) throw new Error('Token invalido')
     return payload.userId
 }
