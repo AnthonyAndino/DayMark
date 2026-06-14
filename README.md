@@ -22,6 +22,21 @@ Habit tracker · Daily journal · Streak tracking · Interactive dashboard · Dr
 
 Track your daily habits, write personal notes, and visualize your progress over time. Built with Next.js 16, React 19, Prisma 7, and PostgreSQL.
 
+### Previews
+<div align="center">
+  <img src="./assets/login.gif" alt="Login Page Timeline Animation" width="600px" />
+  <br />
+  <em>Interactive infinite timeline on login</em>
+  <br /><br />
+  <img src="./assets/register.gif" alt="Register Page Mosaic Cascade" width="600px" />
+  <br />
+  <em>Interactive calendar cascade on register</em>
+  <br /><br />
+  <img src="./assets/dashboard.png" alt="Dashboard Overview" width="600px" />
+  <br />
+  <em>Dashboard overview, habits tracking, and dark theme support</em>
+</div>
+
 ## Features
 
 - **Habit tracking** — Create habits and log them daily with a single click
@@ -138,6 +153,21 @@ Seguimiento de hábitos · Diario personal · Racha de días · Dashboard intera
 </div>
 
 Realiza un seguimiento de tus hábitos diarios, escribe notas personales y visualiza tu progreso a lo largo del tiempo. Construido con Next.js 16, React 19, Prisma 7 y PostgreSQL.
+
+### Vista Previa
+<div align="center">
+  <img src="./assets/login.gif" alt="Animación de inicio de sesión" width="600px" />
+  <br />
+  <em>Línea de tiempo infinita e interactiva al iniciar sesión</em>
+  <br /><br />
+  <img src="./assets/register.gif" alt="Cascada de mosaico al registrarse" width="600px" />
+  <br />
+  <em>Cascada de calendario interactiva en el registro</em>
+  <br /><br />
+  <img src="./assets/dashboard.png" alt="Vista general del dashboard" width="600px" />
+  <br />
+  <em>Panel de control, seguimiento de hábitos y soporte para temas oscuros</em>
+</div>
 
 ## Características
 
