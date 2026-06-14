@@ -9,8 +9,17 @@ interface LocalNote {
     date: string
 }
 
-const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const totalCells = 28
+
+function getDayNames(lang: 'en' | 'es'): string[] {
+    const names: string[] = []
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(2024, 0, 7 + i)
+        const name = d.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { weekday: 'short' })
+        names.push(name.charAt(0).toUpperCase() + name.slice(1))
+    }
+    return names
+}
 
 function DayMarkLogo() {
     return (
@@ -84,8 +93,8 @@ function RegisterPanel() {
         } else {
             const demo: LocalNote = {
                 id: crypto.randomUUID(),
-                content: '¡Bienvenido a DayMark! Esto es una nota local de prueba.',
-                date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+                content: txt.welcomeDemoNote,
+                date: new Date().toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
             }
             setNotes([demo])
             localStorage.setItem('daymark_preview_notes_register', JSON.stringify([demo]))
@@ -128,13 +137,13 @@ function RegisterPanel() {
                     <DayMarkLogo />
                     <span className="text-[10px] tracking-[0.4em] font-bold text-black mr-1">DAYMARK</span>
                     <button onClick={() => setActiveTab('overview')} className={tabClass('overview')}>
-                        {txt.overview}
+                        {txt.panelOverview}
                     </button>
                     <button onClick={() => setActiveTab('habits')} className={tabClass('habits')}>
-                        {txt.habits}
+                        {txt.cardHabits}
                     </button>
                     <button onClick={() => setActiveTab('notes')} className={tabClass('notes')}>
-                        {txt.notes}
+                        {txt.cardNotes}
                     </button>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs tracking-[0.35em]">
@@ -203,7 +212,7 @@ function RegisterPanel() {
                     </div>
 
                     <div className="grid grid-cols-7 gap-px mb-px">
-                        {weekDays.map((d) => (
+                        {getDayNames(lang).map((d) => (
                             <div key={d} className="text-xs tracking-[0.2em] uppercase text-neutral-500 font-semibold text-center pb-1.5">{d}</div>
                         ))}
                     </div>
@@ -327,15 +336,15 @@ function RegisterPanel() {
 /* ───────── LOGIN: Infinite Timeline ───────── */
 function LoginPanel() {
     const ROWS = 5
-    const ITEMS_PER_ROW = 16
+    const ITEMS_PER_ROW = 36
     const FILLED_RATIO = 0.24
 
     const rowConfig = [
-        { direction: 'left', speed: 12 },
-        { direction: 'right', speed: 10 },
-        { direction: 'left', speed: 14 },
-        { direction: 'right', speed: 18 },
-        { direction: 'left', speed: 8 },
+        { direction: 'left', speed: 30 },
+        { direction: 'right', speed: 26 },
+        { direction: 'left', speed: 34 },
+        { direction: 'right', speed: 42 },
+        { direction: 'left', speed: 22 },
     ] as const
 
     const { lang, setLang, txt } = useLang()
@@ -364,8 +373,8 @@ function LoginPanel() {
         } else {
             const demo: LocalNote = {
                 id: crypto.randomUUID(),
-                content: '¡Bienvenido a DayMark! Esto es una nota local de prueba.',
-                date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+                content: txt.welcomeDemoNote,
+                date: new Date().toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
             }
             setNotes([demo])
             localStorage.setItem('daymark_preview_notes', JSON.stringify([demo]))
@@ -408,13 +417,13 @@ function LoginPanel() {
                     <DayMarkLogo />
                     <span className="text-[10px] tracking-[0.4em] font-bold text-black mr-1">DAYMARK</span>
                     <button onClick={() => setActiveTab('overview')} className={tabClass('overview')}>
-                        {txt.overview}
+                        {txt.panelOverview}
                     </button>
                     <button onClick={() => setActiveTab('habits')} className={tabClass('habits')}>
-                        {txt.habits}
+                        {txt.cardHabits}
                     </button>
                     <button onClick={() => setActiveTab('notes')} className={tabClass('notes')}>
-                        {txt.notes}
+                        {txt.cardNotes}
                     </button>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs tracking-[0.35em]">
@@ -489,35 +498,37 @@ function LoginPanel() {
                                     className="overflow-hidden w-full flex select-none"
                                 >
                                     <div
-                                        className="flex whitespace-nowrap gap-4 min-w-max justify-start transform-gpu backface-visibility-hidden"
+                                        className="flex whitespace-nowrap min-w-max justify-start transform-gpu backface-visibility-hidden animate-marquee"
                                         style={{ animation: `${animName} ${speed}s linear infinite` }}
                                     >
-                                        <div className="flex gap-4 shrink-0">
-                                            {row.map((cell) => (
-                                                <div
-                                                    key={`orig-${rIdx}-${cell.id}`}
-                                                    className={`w-9 h-9 flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold border border-black rounded-none ${cell.filled ? 'text-white' : 'text-neutral-500'}`}
-                                                    style={cell.filled ? { background: `repeating-linear-gradient(45deg, #000, #000 1.5px, #fff 1.5px, #fff 3px)` } : { background: '#fff' }}
-                                                >
-                                                    <span className={`inline-flex items-center justify-center w-5 h-5 text-xs leading-none ${cell.filled ? 'bg-black text-white' : 'text-neutral-500'}`}>
-                                                        {cell.day}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="flex gap-4 shrink-0">
-                                            {row.map((cell) => (
-                                                <div
-                                                    key={`clone-${rIdx}-${cell.id}`}
-                                                    className={`w-9 h-9 flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold border border-black rounded-none ${cell.filled ? 'text-white' : 'text-neutral-500'}`}
-                                                    style={cell.filled ? { background: `repeating-linear-gradient(45deg, #000, #000 1.5px, #fff 1.5px, #fff 3px)` } : { background: '#fff' }}
-                                                >
-                                                    <span className={`inline-flex items-center justify-center w-5 h-5 text-xs leading-none ${cell.filled ? 'bg-black text-white' : 'text-neutral-500'}`}>
-                                                        {cell.day}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {row.map((cell, cIdx) => (
+                                            <div
+                                                key={`${rIdx}-${cIdx}`}
+                                                className={`w-9 h-9 flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold border border-black mr-4 ${cell.filled ? 'text-white' : 'text-neutral-500'}`}
+                                                style={cell.filled ? { background: `repeating-linear-gradient(45deg, #000, #000 1.5px, #fff 1.5px, #fff 3px)` } : { background: '#fff' }}
+                                            >
+                                                <span className={`inline-flex items-center justify-center w-5 h-5 text-xs leading-none ${cell.filled ? 'bg-black text-white' : 'text-neutral-500'}`}>
+                                                    {cell.day}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div
+                                        className="flex whitespace-nowrap min-w-max justify-start transform-gpu backface-visibility-hidden animate-marquee"
+                                        style={{ animation: `${animName} ${speed}s linear infinite` }}
+                                        aria-hidden="true"
+                                    >
+                                        {row.map((cell, cIdx) => (
+                                            <div
+                                                key={`${rIdx}-${cIdx}-dup`}
+                                                className={`w-9 h-9 flex-shrink-0 flex items-center justify-center font-mono text-xs font-bold border border-black mr-4 ${cell.filled ? 'text-white' : 'text-neutral-500'}`}
+                                                style={cell.filled ? { background: `repeating-linear-gradient(45deg, #000, #000 1.5px, #fff 1.5px, #fff 3px)` } : { background: '#fff' }}
+                                            >
+                                                <span className={`inline-flex items-center justify-center w-5 h-5 text-xs leading-none ${cell.filled ? 'bg-black text-white' : 'text-neutral-500'}`}>
+                                                    {cell.day}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toggleHabitLog } from '@/lib/actions/habits';
-import { upserNote } from '@/lib/actions/notes';
+import { createNote } from '@/lib/actions/notes';
+import { useLang } from '@/lib/lang';
 
 interface Habit {
     id: number;
@@ -25,12 +26,65 @@ interface Props {
     notes: { date: string; content: string }[];
     streaks: Streak[];
     userId: number;
+    userName: string;
 }
 
-export default function Calendar({ habits, logs, notes, streaks, userId }: Props) {
-    const [currentDate, setCurrentDate] = useState(new Date());
+function ArrowLeft() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
+            <polyline points="10,4 6,8 10,12" />
+        </svg>
+    )
+}
+
+function ArrowRight() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
+            <polyline points="6,4 10,8 6,12" />
+        </svg>
+    )
+}
+
+function CheckIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="shrink-0">
+            <polyline points="2,6 5,9 10,3" />
+        </svg>
+    )
+}
+
+function XIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="shrink-0">
+            <line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" />
+        </svg>
+    )
+}
+
+const localeMap = { en: 'en-US', es: 'es-ES' } as const
+
+function getMonthName(lang: 'en' | 'es', monthIndex: number): string {
+    const d = new Date(2024, monthIndex, 1)
+    const name = d.toLocaleDateString(localeMap[lang], { month: 'long' })
+    return name.charAt(0).toUpperCase() + name.slice(1)
+}
+
+function getDayHeaders(lang: 'en' | 'es'): string[] {
+    const headers: string[] = []
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(2024, 0, 7 + i)
+        const name = d.toLocaleDateString(localeMap[lang], { weekday: 'short' })
+        headers.push(name.toUpperCase())
+    }
+    return headers
+}
+
+export default function Calendar({ habits, logs, notes, streaks, userId, userName }: Props) {
+    const { lang, txt } = useLang()
+    const [currentDate, setCurrentDate] = useState(() => new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const [localLogs, setLocalLogs] = useState(logs);
+    const [localNotes, setLocalNotes] = useState(notes);
     const [noteContent, setNoteContent] = useState('');
     const [savingNote, setSavingNote] = useState(false);
 
@@ -40,37 +94,49 @@ export default function Calendar({ habits, logs, notes, streaks, userId }: Props
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const monthNames = [
-        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-    ];
+    const totalGridCells = firstDay + daysInMonth;
+    const gridRows = Math.ceil(totalGridCells / 7);
+
+    const monthName = getMonthName(lang, month)
+    const dayHeaders = useMemo(() => getDayHeaders(lang), [lang])
+
+    const welcomeMsg = `${txt.welcomeBack}${userName.toUpperCase()}`
+    const emptyHabitsMsg = txt.emptyHabits
+    const emptyNotesMsg = txt.emptyNotes
+
+    function dateStr(day: number) {
+        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    }
 
     function isLogged(habitId: number, day: number): boolean {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        return localLogs.some(
-            (log) => log.habitId === habitId && log.date.startsWith(dateStr),
-        );
+        const ds = dateStr(day)
+        return localLogs.some((log) => log.habitId === habitId && log.date.startsWith(ds))
+    }
+
+    function allDone(day: number): boolean {
+        if (habits.length === 0) return false
+        return habits.every(h => isLogged(h.id, day))
     }
 
     function hasNote(day: number): boolean {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        return notes.some((n) => n.date.startsWith(dateStr));
+        const ds = dateStr(day)
+        return localNotes.some((n) => n.date.startsWith(ds))
+    }
+
+    function notesForDay(day: number) {
+        const ds = dateStr(day)
+        return localNotes.filter((n) => n.date.startsWith(ds))
     }
 
     async function handleToggle(habitId: number, day: number) {
         const date = new Date(year, month, day);
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const ds = dateStr(day)
 
         const exists = isLogged(habitId, day);
         if (exists) {
-            setLocalLogs((prev) =>
-                prev.filter(
-                    (l) =>
-                        !(l.habitId === habitId && l.date.startsWith(dateStr)),
-                ),
-            );
+            setLocalLogs((prev) => prev.filter((l) => !(l.habitId === habitId && l.date.startsWith(ds))));
         } else {
-            setLocalLogs((prev) => [...prev, { habitId, date: dateStr }]);
+            setLocalLogs((prev) => [...prev, { habitId, date: ds }]);
         }
 
         await toggleHabitLog(habitId, date, userId);
@@ -81,13 +147,9 @@ export default function Calendar({ habits, logs, notes, streaks, userId }: Props
         setSavingNote(true);
 
         try {
-            await upserNote({ content: noteContent, date: selectedDateStr });
-            const existing = notes.find((n) => n.date.startsWith(selectedDateStr!));
-            if (existing) {
-                existing.content = noteContent;
-            } else {
-                notes.push({ date: selectedDateStr, content: noteContent });
-            }
+            await createNote({ content: noteContent, date: selectedDateStr });
+            setLocalNotes(prev => [...prev, { date: selectedDateStr, content: noteContent }]);
+            setNoteContent('');
         } catch (err) {
             console.error(err);
         } finally {
@@ -109,51 +171,68 @@ export default function Calendar({ habits, logs, notes, streaks, userId }: Props
     for (let i = 0; i < firstDay; i++) days.push(null);
     for (let i = 1; i <= daysInMonth; i++) days.push(i);
 
-    const selectedDateStr = selectedDay
-        ? `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`
-        : null;
-
-    const selectedNote = selectedDateStr
-        ? notes.find((n) => n.date.startsWith(selectedDateStr))
-        : null;
+    const selectedDateStr = selectedDay ? dateStr(selectedDay) : null;
+    const dayNotes = selectedDay ? notesForDay(selectedDay) : [];
+    const noNotesForDay = dayNotes.length === 0 && !noteContent.trim();
 
     return (
-        <div className="p-1">
-            <div className="flex items-center justify-between mb-8">
+        <div className="flex-1 flex flex-col overflow-hidden p-6 pt-4">
+            <div className="mb-4 shrink-0">
+                <p className="text-[10px] tracking-[0.35em] font-bold uppercase" style={{ color: 'var(--theme-muted)' }}>
+                    {welcomeMsg}
+                </p>
+            </div>
+
+            <div className="flex items-center justify-between mb-4 shrink-0">
                 <button
                     onClick={prevMonth}
-                    className="px-3 py-1.5 border border-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 bg-zinc-950/40 transition-all cursor-pointer"
+                    className="flex items-center gap-1 px-3 py-1.5 border transition-all cursor-pointer rounded-none"
+                    style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-muted)', backgroundColor: 'var(--theme-bg)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--theme-fg)'; e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--theme-fg) 5%, transparent)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--theme-muted)'; e.currentTarget.style.backgroundColor = 'var(--theme-bg)' }}
                 >
-                    ←
+                    <ArrowLeft />
                 </button>
-                <h2 className="text-lg font-bold text-zinc-100 tracking-tight">
-                    {monthNames[month]} {year}
+                <h2 className="text-base font-bold tracking-tight" style={{ color: 'var(--theme-fg)' }}>
+                    {monthName} {year}
                 </h2>
                 <button
                     onClick={nextMonth}
-                    className="px-3 py-1.5 border border-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 bg-zinc-950/40 transition-all cursor-pointer"
+                    className="flex items-center gap-1 px-3 py-1.5 border transition-all cursor-pointer rounded-none"
+                    style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-muted)', backgroundColor: 'var(--theme-bg)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--theme-fg)'; e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--theme-fg) 5%, transparent)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--theme-muted)'; e.currentTarget.style.backgroundColor = 'var(--theme-bg)' }}
                 >
-                    →
+                    <ArrowRight />
                 </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 mb-3">
-                {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((d) => (
+            <div className="grid grid-cols-7 mb-2 shrink-0">
+                {dayHeaders.map((d) => (
                     <div
                         key={d}
-                        className="text-center text-xs text-zinc-500 font-bold uppercase tracking-wider py-1"
+                        className="text-center text-[10px] font-bold uppercase tracking-widest py-1"
+                        style={{ color: 'var(--theme-muted)' }}
                     >
                         {d}
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-1.5 mb-8">
+            <div
+                className="flex-1 grid grid-cols-7"
+                style={{
+                    gridTemplateRows: `repeat(${gridRows}, 1fr)`,
+                    gap: '1px',
+                    backgroundColor: 'var(--theme-border)',
+                }}
+            >
                 {days.map((day, i) => {
                     const isToday =
                         day === new Date().getDate() &&
                         month === new Date().getMonth() &&
                         year === new Date().getFullYear();
+                    const done = day ? allDone(day) : false;
 
                     return (
                         <div
@@ -161,24 +240,28 @@ export default function Calendar({ habits, logs, notes, streaks, userId }: Props
                             onClick={() => {
                                 if (day) {
                                     setSelectedDay(day);
-                                    const note = notes.find((n) =>
-                                        n.date.startsWith(
-                                            `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-                                        ),
-                                    );
-                                    setNoteContent(note?.content ?? '');
+                                    setNoteContent('');
                                 }
                             }}
-                            className={`
-                                aspect-square flex items-center justify-center rounded-xl text-sm cursor-pointer relative transition-all duration-200
-                                ${!day ? 'pointer-events-none opacity-0' : 'border border-zinc-800 bg-zinc-900/10 text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-100'}
-                                ${day === selectedDay ? 'bg-zinc-800 border-zinc-700 text-zinc-50 ring-1 ring-zinc-600' : ''}
-                                ${isToday ? 'font-bold border-zinc-600 bg-zinc-900/60 text-zinc-50 shadow-sm' : ''}
-                            `}
+                            className="flex items-center justify-center text-sm cursor-pointer relative transition-colors"
+                            style={{
+                                backgroundColor: !day ? 'color-mix(in srgb, var(--theme-bg) 97%, var(--theme-fg))' : 'var(--theme-bg)',
+                                color: day === selectedDay ? 'var(--theme-accent-fg)' : 'var(--theme-fg)',
+                                ...(day === selectedDay ? { backgroundColor: 'var(--theme-accent)' } : {}),
+                                ...(isToday && day !== selectedDay ? { fontWeight: 700, borderWidth: 2, borderStyle: 'solid', borderColor: 'var(--theme-accent)' } : {}),
+                            }}
+                            onMouseEnter={(e) => { if (day && day !== selectedDay) e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--theme-fg) 8%, var(--theme-bg))' }}
+                            onMouseLeave={(e) => { if (day && day !== selectedDay) e.currentTarget.style.backgroundColor = 'var(--theme-bg)' }}
                         >
                             {day}
+                            {done && (
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1">
+                                    <line x1="15" y1="15" x2="85" y2="85" />
+                                    <line x1="85" y1="15" x2="15" y2="85" />
+                                </svg>
+                            )}
                             {day && hasNote(day) && (
-                                <span className="absolute bottom-1.5 w-1.5 h-1.5 bg-purple-500 rounded-full shadow-sm shadow-purple-500/50" />
+                                <span className="absolute bottom-1 w-1 h-1" style={{ backgroundColor: day === selectedDay ? 'var(--theme-accent-fg)' : 'var(--theme-accent)' }} />
                             )}
                         </div>
                     );
@@ -186,77 +269,89 @@ export default function Calendar({ habits, logs, notes, streaks, userId }: Props
             </div>
 
             {selectedDay && (
-                <div className="border border-zinc-800/80 bg-zinc-900/20 backdrop-blur-md rounded-2xl p-5 shadow-2xl">
-                    <h3 className="text-base font-bold text-zinc-100 mb-4 border-b border-zinc-800 pb-2">
-                        Detalles del {selectedDay} de {monthNames[month]}
-                    </h3>
-
-                    <div className="mb-4">
-                        <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-3">Hábitos</p>
-                        {habits.length === 0 && (
-                            <p className="text-sm text-zinc-500 italic">
-                                No tienes hábitos registrados aún
+                <div className="shrink-0 mt-3 pt-3 flex gap-6" style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'var(--theme-border)' }}>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--theme-muted)' }}>{txt.habitsSection}</p>
+                        {habits.length === 0 ? (
+                            <p className="text-[10px] tracking-widest" style={{ color: 'var(--theme-muted)' }}>
+                                {emptyHabitsMsg}
                             </p>
-                        )}
-                        <div className="flex flex-col gap-1">
-                            {habits.map((habit) => {
-                                const checked = isLogged(habit.id, selectedDay);
-                                const streak = streaks.find((s) => s.habitId === habit.id);
-                                return (
-                                    <div
-                                        key={habit.id}
-                                        className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-zinc-900/40 transition-colors"
-                                    >
-                                        <button
-                                            onClick={() =>
-                                                handleToggle(habit.id, selectedDay)
-                                            }
-                                            className={`w-6 h-6 border rounded-md flex items-center justify-center font-bold text-xs transition-all cursor-pointer
-                                            ${
-                                                checked
-                                                    ? 'bg-zinc-100 border-zinc-100 text-zinc-950 hover:bg-zinc-200'
-                                                    : 'border-zinc-800 bg-zinc-950 text-transparent hover:border-zinc-700'
-                                            }`}
-                                        >
-                                            {checked ? '✓' : ''}
-                                        </button>
-                                        <span className={`text-sm ${checked ? 'text-zinc-200 font-medium' : 'text-zinc-400'}`}>
-                                            {habit.name}
-                                        </span>
-                                        {streak && streak.count > 0 && (
-                                            <span className="ml-auto text-xs text-zinc-500 bg-zinc-800/50 rounded-full px-2 py-0.5">
-                                                🔥 {streak.count}
+                        ) : (
+                            <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                {habits.map((habit) => {
+                                    const checked = isLogged(habit.id, selectedDay);
+                                    const streak = streaks.find((s) => s.habitId === habit.id);
+                                    return (
+                                        <div key={habit.id} className="flex items-center gap-2 py-1">
+                                            <button
+                                                onClick={() => handleToggle(habit.id, selectedDay)}
+                                                className="w-4 h-4 border flex items-center justify-center transition-all cursor-pointer rounded-none"
+                                                style={{
+                                                    borderColor: checked ? 'var(--theme-accent)' : 'var(--theme-border)',
+                                                    backgroundColor: checked ? 'var(--theme-accent)' : 'transparent',
+                                                    color: checked ? 'var(--theme-accent-fg)' : 'transparent',
+                                                }}
+                                            >
+                                                {checked && <CheckIcon />}
+                                            </button>
+                                            <span className="text-xs" style={{ color: checked ? 'var(--theme-fg)' : 'var(--theme-muted)' }}>
+                                                {habit.name}
                                             </span>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                            {streak && streak.count > 0 && (
+                                                <span className="text-[10px] px-1.5 py-0.5 border rounded-none" style={{ color: 'var(--theme-muted)', borderColor: 'var(--theme-border)' }}>
+                                                    {streak.count}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="border-t border-zinc-800 pt-4 mt-4">
-                        <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-3">Nota del día</p>
+                    <div className="w-px shrink-0" style={{ backgroundColor: 'var(--theme-border)' }} />
+
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--theme-muted)' }}>{txt.noteOfDay}</p>
+                        {noNotesForDay && (
+                            <p className="text-[10px] tracking-widest mb-2" style={{ color: 'var(--theme-muted)' }}>
+                                {emptyNotesMsg}
+                            </p>
+                        )}
+                        {dayNotes.length > 0 && (
+                            <div className="space-y-1 mb-3 max-h-20 overflow-y-auto">
+                                {dayNotes.map((n, i) => (
+                                    <p key={i} className="text-[10px] leading-relaxed" style={{ color: 'var(--theme-muted)' }}>
+                                        {n.content}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
                         <textarea
                             value={noteContent}
                             onChange={(e) => setNoteContent(e.target.value)}
-                            placeholder="Escribe una nota privada..."
-                            rows={3}
-                            className="w-full border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-100 bg-zinc-950/40 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors resize-none"
+                            placeholder={txt.writeNotePrivate}
+                            rows={2}
+                            className="w-full border px-3 py-1.5 text-xs focus:outline-none transition-colors resize-none rounded-none"
+                            style={{
+                                borderColor: 'var(--theme-border)',
+                                color: 'var(--theme-fg)',
+                                backgroundColor: 'var(--theme-bg)',
+                            }}
                         />
-                        <button
-                            onClick={handleSaveNote}
-                            disabled={savingNote || !noteContent.trim()}
-                            className="mt-2 bg-zinc-100 text-zinc-950 rounded-xl px-4 py-2 text-sm font-bold hover:bg-zinc-200 transition-all disabled:opacity-50"
-                        >
-                            {savingNote ? 'Guardando...' : 'Guardar nota'}
-                        </button>
-                        {selectedNote && (
-                            <div className="bg-purple-950/10 border border-purple-900/20 rounded-xl p-4 mt-4">
-                                <p className="text-sm text-zinc-300 leading-relaxed">
-                                    {selectedNote.content}
-                                </p>
-                            </div>
-                        )}
+                        <div className="flex items-center justify-between mt-1.5">
+                            <button
+                                onClick={handleSaveNote}
+                                disabled={savingNote || !noteContent.trim()}
+                                className="px-3 py-1 text-[10px] font-semibold tracking-widest uppercase transition-all rounded-none disabled:opacity-50"
+                                style={{
+                                    backgroundColor: 'var(--theme-accent)',
+                                    color: 'var(--theme-accent-fg)',
+                                }}
+                            >
+                                {savingNote ? txt.saving : txt.saveNoteDay}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
