@@ -328,15 +328,14 @@ function RegisterPanel() {
 function LoginPanel() {
     const ROWS = 5
     const ITEMS_PER_ROW = 16
-    const FILLED_RATIO = 0.78
+    const FILLED_RATIO = 0.24
 
     const rowConfig = [
-        { direction: 'left', speed: 40 },
-        { direction: 'right', speed: 35 },
-        { direction: 'left', speed: 50 },
-        { direction: 'right', speed: 45 },
-        { direction: 'left', speed: 30 },
-        { direction: 'right', speed: 55 },
+        { direction: 'left', speed: 12 },
+        { direction: 'right', speed: 10 },
+        { direction: 'left', speed: 14 },
+        { direction: 'right', speed: 18 },
+        { direction: 'left', speed: 8 },
     ] as const
 
     const { lang, setLang, txt } = useLang()
