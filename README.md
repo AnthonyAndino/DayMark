@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DayMark
+
+> A personal habit tracker and daily journal — mark your day, build your streak.
+
+Track your daily habits, write personal notes, and visualize your progress over time. Built with Next.js 16, React 19, Prisma 7, and PostgreSQL.
+
+## Features
+
+- **Habit tracking** — Create habits and log them daily with a single click
+- **Streak calculation** — Automatic streak tracking to keep you motivated
+- **Daily notes** — Write a personal note for each day
+- **Dashboard calendar** — Monthly view with habit completion status
+- **Overview & charts** — Activity graph, completion rates, and trends (via Recharts)
+- **Custom themes** — 4 presets (Minimal, Gris Industrial, Negro Puro, Dracula) + custom hex colors with auto-contrast
+- **i18n** — English and Spanish (ES/EN) with context-based switching
+- **Authentication** — JWT-based auth with httpOnly cookies (bcrypt + jsonwebtoken)
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, Tailwind CSS v4 |
+| Database | PostgreSQL via Prisma 7 |
+| Auth | JWT (httpOnly cookie), bcryptjs |
+| Charts | Recharts |
+| Validation | Zod |
+| Language | TypeScript 5 |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js >= 20
+- PostgreSQL running locally on port 5432 (or configure via `DATABASE_URL`)
+
+### Setup
 
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Configure environment
+cp .env.example .env   # or edit .env directly
+
+# 3. Generate Prisma client
+npx prisma generate
+
+# 4. Run migrations
+npx prisma migrate dev
+
+# 5. Start the dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:postgres@localhost:5432/daymark` |
+| `JWT_SECRET` | Secret key for JWT signing | *(change before production)* |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── api/auth/       # Auth API routes (login, register, logout)
+│   ├── dashboard/      # Protected dashboard (habits, notes, overview)
+│   │   ├── habits/
+│   │   ├── notes/
+│   │   └── overview/
+│   ├── login/
+│   ├── register/
+│   └── layout.tsx
+├── components/         # React components
+├── lib/
+│   ├── actions/        # Server actions (habits, notes, auth)
+│   ├── auth.ts         # Auth utilities (JWT, cookies)
+│   ├── prisma.ts       # Prisma client singleton
+│   ├── lang.tsx        # i18n (ES/EN)
+│   └── theme-context.tsx  # Theme system
+├── middleware.ts       # Route protection
+└── globals.css
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npx prisma studio` | Open Prisma Studio (DB GUI) |
+| `npx prisma migrate dev` | Run pending migrations |
 
-## Deploy on Vercel
+## Project Status
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+DayMark is under active development. See the [milestones](https://github.com/AnthonyAndino/DayMark/milestones) and [issues](https://github.com/AnthonyAndino/DayMark/issues) on GitHub for the full roadmap.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT
