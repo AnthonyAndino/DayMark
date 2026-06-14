@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "./lib/auth"
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
     const token = req.cookies.get('token')?.value
 
     if (!token) {
         return NextResponse.redirect(new URL('/login', req.url))
     }
 
-    const payload = verifyToken(token)
+    const payload = await verifyToken(token)
     if (!payload) {
         return NextResponse.redirect(new URL('/login', req.url))
     }
