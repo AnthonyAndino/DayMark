@@ -17,15 +17,17 @@ Track your daily habits, write personal notes, and visualize your progress over 
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router) |
-| UI | React 19, Tailwind CSS v4 |
-| Database | PostgreSQL via Prisma 7 |
-| Auth | JWT (httpOnly cookie), bcryptjs |
-| Charts | Recharts |
-| Validation | Zod |
-| Language | TypeScript 5 |
+![Next.js 16](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
+![React 19](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript 5](https://img.shields.io/badge/TypeScript_5-3178C6?logo=typescript&logoColor=white)
+![Tailwind v4](https://img.shields.io/badge/Tailwind_v4-06B6D4?logo=tailwindcss&logoColor=white)
+![Prisma 7](https://img.shields.io/badge/Prisma_7-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white)
+![bcrypt](https://img.shields.io/badge/bcrypt-003A70?logo=&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-22B5BF?logo=recharts&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod-3E67B1?logo=zod&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Getting Started
 
