@@ -341,10 +341,10 @@ function LoginPanel() {
 
     const rowConfig = [
         { direction: 'left', speed: 30 },
-        { direction: 'right', speed: 26 },
-        { direction: 'left', speed: 34 },
-        { direction: 'right', speed: 42 },
-        { direction: 'left', speed: 22 },
+        { direction: 'right', speed: 52 },
+        { direction: 'left', speed: 40 },
+        { direction: 'right', speed: 84 },
+        { direction: 'left', speed: 24 },
     ] as const
 
     const { lang, setLang, txt } = useLang()
