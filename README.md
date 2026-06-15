@@ -20,6 +20,8 @@ Habit tracker · Daily journal · Streak tracking · Interactive dashboard · Dr
 
 </div>
 
+🔗 **Live demo:** [daymark-ochre.vercel.app](https://daymark-ochre.vercel.app/login)
+
 Track your daily habits, write personal notes, and visualize your progress over time. Built with Next.js 16, React 19, Prisma 7, and PostgreSQL.
 
 ### Previews
@@ -151,6 +153,8 @@ Seguimiento de hábitos · Diario personal · Racha de días · Dashboard intera
 [🇬🇧 English Version](#daymark--habit-tracker--daily-journal)
 
 </div>
+
+🔗 **Demo en vivo:** [daymark-ochre.vercel.app](https://daymark-ochre.vercel.app/login)
 
 Realiza un seguimiento de tus hábitos diarios, escribe notas personales y visualiza tu progreso a lo largo del tiempo. Construido con Next.js 16, React 19, Prisma 7 y PostgreSQL.
 
