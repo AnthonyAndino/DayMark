@@ -31,8 +31,12 @@ export default function RegisterPage() {
         if (res.ok) {
             router.push('/dashboard')
         } else {
-            const data = await res.json()
-            setError(data.error)
+            try {
+                const data = await res.json()
+                setError(data.error || 'Error desconocido')
+            } catch {
+                setError('Error del servidor — revisa la consola para más detalles')
+            }
         }
     }
 
