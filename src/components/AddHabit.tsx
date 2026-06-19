@@ -9,11 +9,10 @@ interface Props {
     userId: number
 }
 
-const DAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
-const PRESETS: { label: string; days: number[] | null }[] = [
-    { label: 'Diario', days: null },
-    { label: 'L-V', days: [1, 2, 3, 4, 5] },
-    { label: 'Findes', days: [0, 6] },
+const PRESETS: { label: string; labelFull: string; days: number[] | null }[] = [
+    { label: 'Diario', labelFull: 'Todos los días', days: null },
+    { label: 'L-V', labelFull: 'Lunes a viernes', days: [1, 2, 3, 4, 5] },
+    { label: 'Findes', labelFull: 'Fines de semana', days: [0, 6] },
 ]
 
 function AddIcon() {
@@ -27,25 +26,10 @@ function AddIcon() {
 
 export default function AddHabit({ userId }: Props) {
     const [name, setName] = useState('')
-    const [selectedDays, setSelectedDays] = useState<number[] | null>(null)
+    const [schedule, setSchedule] = useState<number[] | null>(null)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     const { txt } = useLang()
-
-    function toggleDay(day: number) {
-        setSelectedDays(prev => {
-            if (prev === null) return [day]
-            if (prev.includes(day)) {
-                const next = prev.filter(d => d !== day)
-                return next.length === 0 ? null : next
-            }
-            return [...prev, day]
-        })
-    }
-
-    function applyPreset(days: number[] | null) {
-        setSelectedDays(days)
-    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -53,9 +37,9 @@ export default function AddHabit({ userId }: Props) {
         setLoading(true)
 
         try {
-            await createHabit({ name, userId, daysOfWeek: selectedDays ?? undefined })
+            await createHabit({ name, userId, daysOfWeek: schedule ?? undefined })
             setName('')
-            setSelectedDays(null)
+            setSchedule(null)
             router.refresh()
         } catch (err) {
             console.error(err)
@@ -97,45 +81,27 @@ export default function AddHabit({ userId }: Props) {
                 </button>
             </div>
             <div className="flex items-center gap-2 px-6 pb-3">
-                <div className="flex gap-0.5">
-                    {DAY_LABELS.map((label, i) => {
-                        const active = selectedDays === null || selectedDays.includes(i)
-                        return (
-                            <button
-                                key={i}
-                                type="button"
-                                onClick={() => toggleDay(i)}
-                                className="w-6 h-6 text-[10px] font-bold border transition-all cursor-pointer rounded-none"
-                                style={{
-                                    borderColor: active ? 'var(--theme-accent)' : 'var(--theme-border)',
-                                    color: active ? 'var(--theme-accent)' : 'var(--theme-muted)',
-                                    backgroundColor: active ? 'color-mix(in srgb, var(--theme-accent) 10%, transparent)' : 'transparent',
-                                }}
-                            >
-                                {label}
-                            </button>
-                        )
-                    })}
-                </div>
-                <div className="flex gap-1 ml-2">
-                    {PRESETS.map(p => (
+                <span className="text-[10px] font-semibold tracking-wider uppercase mr-1" style={{ color: 'var(--theme-muted)' }}>
+                    Días:
+                </span>
+                {PRESETS.map(p => {
+                    const active = schedule === p.days
+                    return (
                         <button
                             key={p.label}
                             type="button"
-                            onClick={() => applyPreset(p.days)}
-                            className="px-2 py-0.5 text-[9px] font-semibold tracking-wider border transition-all cursor-pointer rounded-none uppercase"
+                            onClick={() => setSchedule(p.days)}
+                            className="px-3 py-1 text-[10px] font-semibold tracking-wider border transition-all cursor-pointer rounded-none uppercase"
                             style={{
-                                borderColor: 'var(--theme-border)',
-                                color: 'var(--theme-muted)',
-                                backgroundColor: 'transparent',
+                                borderColor: active ? 'var(--theme-accent)' : 'var(--theme-border)',
+                                color: active ? 'var(--theme-accent)' : 'var(--theme-muted)',
+                                backgroundColor: active ? 'color-mix(in srgb, var(--theme-accent) 10%, transparent)' : 'transparent',
                             }}
-                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-accent)'; e.currentTarget.style.color = 'var(--theme-accent)' }}
-                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--theme-muted)' }}
                         >
                             {p.label}
                         </button>
-                    ))}
-                </div>
+                    )
+                })}
             </div>
         </form>
     )
