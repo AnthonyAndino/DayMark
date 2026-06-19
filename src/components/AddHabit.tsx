@@ -9,20 +9,11 @@ interface Props {
     userId: number
 }
 
-const PRESETS: { label: string; labelFull: string; days: number[] | null }[] = [
-    { label: 'Diario', labelFull: 'Todos los días', days: null },
-    { label: 'L-V', labelFull: 'Lunes a viernes', days: [1, 2, 3, 4, 5] },
-    { label: 'Findes', labelFull: 'Fines de semana', days: [0, 6] },
+const OPTIONS: { label: string; desc: string; days: number[] | null }[] = [
+    { label: 'Todos los días', desc: 'El hábito cuenta de lunes a domingo', days: null },
+    { label: 'Lunes a viernes', desc: 'El hábito solo cuenta entre semana', days: [1, 2, 3, 4, 5] },
+    { label: 'Fines de semana', desc: 'El hábito solo cuenta sábado y domingo', days: [0, 6] },
 ]
-
-function AddIcon() {
-    return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
-            <line x1="7" y1="2" x2="7" y2="12" />
-            <line x1="2" y1="7" x2="12" y2="7" />
-        </svg>
-    )
-}
 
 export default function AddHabit({ userId }: Props) {
     const [name, setName] = useState('')
@@ -76,29 +67,33 @@ export default function AddHabit({ userId }: Props) {
                         color: 'var(--theme-accent-fg)',
                     }}
                 >
-                    <AddIcon />
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
+                        <line x1="7" y1="2" x2="7" y2="12" />
+                        <line x1="2" y1="7" x2="12" y2="7" />
+                    </svg>
                     {loading ? '...' : txt.addHabit}
                 </button>
             </div>
-            <div className="flex items-center gap-2 px-6 pb-3">
-                <span className="text-[10px] font-semibold tracking-wider uppercase mr-1" style={{ color: 'var(--theme-muted)' }}>
-                    Días:
-                </span>
-                {PRESETS.map(p => {
-                    const active = schedule === p.days
+            <div className="flex flex-wrap gap-2 px-6 pb-3">
+                {OPTIONS.map(o => {
+                    const active = schedule === o.days
                     return (
                         <button
-                            key={p.label}
+                            key={o.label}
                             type="button"
-                            onClick={() => setSchedule(p.days)}
-                            className="px-3 py-1 text-[10px] font-semibold tracking-wider border transition-all cursor-pointer rounded-none uppercase"
+                            onClick={() => setSchedule(o.days)}
+                            className="flex flex-col items-start px-3 py-2 border transition-all cursor-pointer rounded-none"
                             style={{
                                 borderColor: active ? 'var(--theme-accent)' : 'var(--theme-border)',
-                                color: active ? 'var(--theme-accent)' : 'var(--theme-muted)',
-                                backgroundColor: active ? 'color-mix(in srgb, var(--theme-accent) 10%, transparent)' : 'transparent',
+                                backgroundColor: active ? 'color-mix(in srgb, var(--theme-accent) 8%, transparent)' : 'transparent',
                             }}
                         >
-                            {p.label}
+                            <span className="text-xs font-semibold tracking-wide" style={{ color: active ? 'var(--theme-accent)' : 'var(--theme-fg)' }}>
+                                {active ? '●' : '○'} {o.label}
+                            </span>
+                            <span className="text-[9px] mt-0.5 tracking-wider" style={{ color: 'var(--theme-muted)' }}>
+                                {o.desc}
+                            </span>
                         </button>
                     )
                 })}
