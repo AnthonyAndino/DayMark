@@ -16,12 +16,13 @@ model User {
 }
 
 model Habit {
-  id Int @id @default(autoincrement())
-  name String
-  userId Int
-  createdAt DateTime @default(now())
-  user User @relation(fields: [userId], references: [id])
-  logs HabitLog[]
+  id        Int        @id @default(autoincrement())
+  name      String
+  userId    Int
+  daysOfWeek Json?
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id])
+  logs      HabitLog[]
 }
 
 model HabitLog {

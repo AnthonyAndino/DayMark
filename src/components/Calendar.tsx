@@ -4,10 +4,13 @@ import { useState, useMemo } from 'react';
 import { toggleHabitLog } from '@/lib/actions/habits';
 import { createNote } from '@/lib/actions/notes';
 import { useLang } from '@/lib/lang';
+import Link from 'next/link';
 
 interface Habit {
     id: number;
     name: string;
+    daysOfWeek: number[] | null;
+    createdAt: string;
 }
 
 interface HabitLog {
@@ -27,6 +30,7 @@ interface Props {
     streaks: Streak[];
     userId: number;
     userName: string;
+    habitId?: number;
 }
 
 function ArrowLeft() {
@@ -53,14 +57,6 @@ function CheckIcon() {
     )
 }
 
-function XIcon() {
-    return (
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" className="shrink-0">
-            <line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" />
-        </svg>
-    )
-}
-
 const localeMap = { en: 'en-US', es: 'es-ES' } as const
 
 function getMonthName(lang: 'en' | 'es', monthIndex: number): string {
@@ -79,7 +75,18 @@ function getDayHeaders(lang: 'en' | 'es'): string[] {
     return headers
 }
 
-export default function Calendar({ habits, logs, notes, streaks, userId, userName }: Props) {
+function habitAppliesOnDate(habit: Habit, year: number, month: number, day: number): boolean {
+    const date = new Date(year, month, day)
+    const createdAt = new Date(habit.createdAt)
+    createdAt.setHours(0, 0, 0, 0)
+    if (date < createdAt) return false
+
+    if (habit.daysOfWeek && !habit.daysOfWeek.includes(date.getDay())) return false
+
+    return true
+}
+
+export default function Calendar({ habits, logs, notes, streaks, userId, userName, habitId }: Props) {
     const { lang, txt } = useLang()
     const [currentDate, setCurrentDate] = useState(() => new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -113,9 +120,14 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
         return localLogs.some((log) => log.habitId === habitId && log.date.startsWith(ds))
     }
 
+    function applicableHabits(day: number): Habit[] {
+        return habits.filter(h => habitAppliesOnDate(h, year, month, day))
+    }
+
     function allDone(day: number): boolean {
-        if (habits.length === 0) return false
-        return habits.every(h => isLogged(h.id, day))
+        const applicable = applicableHabits(day)
+        if (applicable.length === 0) return false
+        return applicable.every(h => isLogged(h.id, day))
     }
 
     function hasNote(day: number): boolean {
@@ -174,6 +186,8 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
     const selectedDateStr = selectedDay ? dateStr(selectedDay) : null;
     const dayNotes = selectedDay ? notesForDay(selectedDay) : [];
     const noNotesForDay = dayNotes.length === 0 && !noteContent.trim();
+
+    const filteredHabits = habitId ? habits.filter(h => h.id === habitId) : habits
 
     return (
         <div className="flex-1 flex flex-col overflow-hidden p-6 pt-4">
@@ -272,16 +286,17 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
                 <div className="shrink-0 mt-3 pt-3 flex gap-6" style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'var(--theme-border)' }}>
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--theme-muted)' }}>{txt.habitsSection}</p>
-                        {habits.length === 0 ? (
+                        {filteredHabits.length === 0 ? (
                             <p className="text-[10px] tracking-widest" style={{ color: 'var(--theme-muted)' }}>
                                 {emptyHabitsMsg}
                             </p>
                         ) : (
                             <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                {habits.map((habit) => {
-                                    const checked = isLogged(habit.id, selectedDay);
+                                {filteredHabits.map((habit) => {
+                                    const applies = habitAppliesOnDate(habit, year, month, selectedDay)
+                                    const checked = applies && isLogged(habit.id, selectedDay);
                                     const streak = streaks.find((s) => s.habitId === habit.id);
-                                    return (
+                                    return applies ? (
                                         <div key={habit.id} className="flex items-center gap-2 py-1">
                                             <button
                                                 onClick={() => handleToggle(habit.id, selectedDay)}
@@ -294,16 +309,26 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
                                             >
                                                 {checked && <CheckIcon />}
                                             </button>
-                                            <span className="text-xs" style={{ color: checked ? 'var(--theme-fg)' : 'var(--theme-muted)' }}>
-                                                {habit.name}
-                                            </span>
+                                            {!habitId ? (
+                                                <Link
+                                                    href={`/dashboard/habits/${habit.id}`}
+                                                    className="text-xs hover:underline"
+                                                    style={{ color: checked ? 'var(--theme-fg)' : 'var(--theme-muted)' }}
+                                                >
+                                                    {habit.name}
+                                                </Link>
+                                            ) : (
+                                                <span className="text-xs" style={{ color: checked ? 'var(--theme-fg)' : 'var(--theme-muted)' }}>
+                                                    {habit.name}
+                                                </span>
+                                            )}
                                             {streak && streak.count > 0 && (
                                                 <span className="text-[10px] px-1.5 py-0.5 border rounded-none" style={{ color: 'var(--theme-muted)', borderColor: 'var(--theme-border)' }}>
                                                     {streak.count}
                                                 </span>
                                             )}
                                         </div>
-                                    );
+                                    ) : null
                                 })}
                             </div>
                         )}

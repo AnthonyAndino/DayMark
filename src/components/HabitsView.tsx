@@ -1,18 +1,29 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useState } from 'react'
 import { useLang } from '@/lib/lang'
 import { deleteHabit } from '@/lib/actions/habits'
 import AddHabit from './AddHabit'
 
-interface Habit { id: number; name: string }
+interface Habit { id: number; name: string; daysOfWeek: number[] | null }
 interface Streak { habitId: number; count: number }
+
+const DAY_LABELS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 
 function XIcon() {
     return (
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
             <line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" />
+        </svg>
+    )
+}
+
+function CalendarIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
+            <rect x="1" y="2" width="10" height="9" rx="1" /><line x1="1" y1="5" x2="11" y2="5" /><line x1="4" y1="1" x2="4" y2="3" /><line x1="8" y1="1" x2="8" y2="3" />
         </svg>
     )
 }
@@ -54,15 +65,31 @@ export default function HabitsView({ habits, streaks, userId }: { habits: Habit[
                                     className="flex items-center justify-between px-4 py-3 group"
                                     style={{ backgroundColor: 'var(--theme-bg)' }}
                                 >
-                                    <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--theme-fg)' }}>
-                                        {habit.name}
-                                    </span>
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <span className="text-xs uppercase tracking-wider truncate" style={{ color: 'var(--theme-fg)' }}>
+                                            {habit.name}
+                                        </span>
+                                        {habit.daysOfWeek && (
+                                            <span className="text-[9px] tracking-wider shrink-0" style={{ color: 'var(--theme-muted)' }}>
+                                                {DAY_LABELS.map((l, i) => habit.daysOfWeek!.includes(i) ? l : '·').join(' ')}
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2">
                                         {streak && streak.count > 0 && (
                                             <span className="text-[10px] px-2 py-0.5 border" style={{ color: 'var(--theme-muted)', borderColor: 'var(--theme-border)' }}>
                                                 {streak.count}
                                             </span>
                                         )}
+                                        <Link
+                                            href={`/dashboard/habits/${habit.id}`}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity border border-transparent hover:border-blue-400/30 p-1 rounded-none"
+                                            style={{ color: 'var(--theme-muted)' }}
+                                            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--theme-accent)' }}
+                                            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--theme-muted)' }}
+                                        >
+                                            <CalendarIcon />
+                                        </Link>
                                         <button
                                             onClick={() => handleDelete(habit.id)}
                                             disabled={isDeleting}

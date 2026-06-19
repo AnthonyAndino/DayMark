@@ -20,13 +20,19 @@ export default async function HabitsPage() {
         orderBy: { createdAt: 'asc' }
     })
 
+    const serializedHabits = habits.map(h => ({
+        id: h.id,
+        name: h.name,
+        daysOfWeek: h.daysOfWeek as number[] | null
+    }))
+
     const streaks = await Promise.all(
         habits.map(h => getStreak(h.id).then(count => ({ habitId: h.id, count })))
     )
 
     return (
         <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--theme-bg)', color: 'var(--theme-fg)' }}>
-            <HabitsView habits={habits} streaks={streaks} userId={userId} />
+            <HabitsView habits={serializedHabits} streaks={streaks} userId={userId} />
         </div>
     )
 }
