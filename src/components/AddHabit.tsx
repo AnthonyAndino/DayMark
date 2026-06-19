@@ -17,20 +17,23 @@ const OPTIONS: { label: string; desc: string; days: number[] | null }[] = [
 
 export default function AddHabit({ userId }: Props) {
     const [name, setName] = useState('')
-    const [schedule, setSchedule] = useState<number[] | null>(null)
+    const [step, setStep] = useState<'name' | 'schedule'>('name')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     const { txt } = useLang()
 
-    async function handleSubmit(e: React.FormEvent) {
+    function handleFirstSubmit(e: React.FormEvent) {
         e.preventDefault()
         if (!name.trim()) return
-        setLoading(true)
+        setStep('schedule')
+    }
 
+    async function handlePickSchedule(days: number[] | null) {
+        setLoading(true)
         try {
-            await createHabit({ name, userId, daysOfWeek: schedule ?? undefined })
+            await createHabit({ name, userId, daysOfWeek: days ?? undefined })
             setName('')
-            setSchedule(null)
+            setStep('name')
             router.refresh()
         } catch (err) {
             console.error(err)
@@ -39,65 +42,84 @@ export default function AddHabit({ userId }: Props) {
         }
     }
 
-    return (
-        <form
-            onSubmit={handleSubmit}
-            className="flex flex-col shrink-0"
-            style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}
-        >
-            <div className="flex items-center gap-2 px-6 pt-3 pb-2">
-                <input
-                    type="text"
-                    placeholder={txt.newHabitPlaceholder}
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="flex-1 border px-3 py-1.5 text-sm focus:outline-none transition-colors rounded-none"
-                    style={{
-                        borderColor: 'var(--theme-border)',
-                        color: 'var(--theme-fg)',
-                        backgroundColor: 'var(--theme-bg)',
-                    }}
-                />
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold tracking-widest uppercase transition-all rounded-none disabled:opacity-50"
-                    style={{
-                        backgroundColor: 'var(--theme-accent)',
-                        color: 'var(--theme-accent-fg)',
-                    }}
-                >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
-                        <line x1="7" y1="2" x2="7" y2="12" />
-                        <line x1="2" y1="7" x2="12" y2="7" />
-                    </svg>
-                    {loading ? '...' : txt.addHabit}
-                </button>
-            </div>
-            <div className="flex flex-wrap gap-2 px-6 pb-3">
-                {OPTIONS.map(o => {
-                    const active = schedule === o.days
-                    return (
+    if (step === 'schedule') {
+        return (
+            <div
+                className="flex flex-col shrink-0 px-6 py-3"
+                style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}
+            >
+                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--theme-fg)' }}>
+                    ¿Cada cuánto aplica <span style={{ color: 'var(--theme-accent)' }}>"{name}"</span>?
+                </p>
+                <div className="flex flex-wrap gap-2">
+                    {OPTIONS.map(o => (
                         <button
                             key={o.label}
                             type="button"
-                            onClick={() => setSchedule(o.days)}
-                            className="flex flex-col items-start px-3 py-2 border transition-all cursor-pointer rounded-none"
+                            disabled={loading}
+                            onClick={() => handlePickSchedule(o.days)}
+                            className="flex flex-col items-start px-4 py-2.5 border transition-all cursor-pointer rounded-none disabled:opacity-50"
                             style={{
-                                borderColor: active ? 'var(--theme-accent)' : 'var(--theme-border)',
-                                backgroundColor: active ? 'color-mix(in srgb, var(--theme-accent) 8%, transparent)' : 'transparent',
+                                borderColor: 'var(--theme-border)',
+                                backgroundColor: 'var(--theme-bg)',
                             }}
+                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-accent)'; e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--theme-accent) 8%, transparent)' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.backgroundColor = 'var(--theme-bg)' }}
                         >
-                            <span className="text-xs font-semibold tracking-wide" style={{ color: active ? 'var(--theme-accent)' : 'var(--theme-fg)' }}>
-                                {active ? '●' : '○'} {o.label}
+                            <span className="text-xs font-semibold tracking-wide" style={{ color: 'var(--theme-fg)' }}>
+                                {o.label}
                             </span>
                             <span className="text-[9px] mt-0.5 tracking-wider" style={{ color: 'var(--theme-muted)' }}>
                                 {o.desc}
                             </span>
                         </button>
-                    )
-                })}
+                    ))}
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setStep('name')}
+                    className="mt-2 self-start text-[10px] tracking-wider hover:underline"
+                    style={{ color: 'var(--theme-muted)' }}
+                >
+                  ← Cancelar
+                </button>
             </div>
+        )
+    }
+
+    return (
+        <form
+            onSubmit={handleFirstSubmit}
+            className="flex items-center gap-2 px-6 py-3 shrink-0"
+            style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}
+        >
+            <input
+                type="text"
+                placeholder={txt.newHabitPlaceholder}
+                value={name}
+                onChange={e => { setName(e.target.value); setStep('name') }}
+                className="flex-1 border px-3 py-1.5 text-sm focus:outline-none transition-colors rounded-none"
+                style={{
+                    borderColor: 'var(--theme-border)',
+                    color: 'var(--theme-fg)',
+                    backgroundColor: 'var(--theme-bg)',
+                }}
+            />
+            <button
+                type="submit"
+                disabled={!name.trim()}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold tracking-widest uppercase transition-all rounded-none disabled:opacity-50"
+                style={{
+                    backgroundColor: 'var(--theme-accent)',
+                    color: 'var(--theme-accent-fg)',
+                }}
+            >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1" className="shrink-0">
+                    <line x1="7" y1="2" x2="7" y2="12" />
+                    <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+                {txt.addHabit}
+            </button>
         </form>
     )
 }
