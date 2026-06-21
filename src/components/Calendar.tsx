@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { toggleHabitLog } from '@/lib/actions/habits';
 import { createNote } from '@/lib/actions/notes';
 import { useLang } from '@/lib/lang';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface Habit {
@@ -88,6 +89,7 @@ function habitAppliesOnDate(habit: Habit, year: number, month: number, day: numb
 
 export default function Calendar({ habits, logs, notes, streaks, userId, userName, habitId }: Props) {
     const { lang, txt } = useLang()
+    const router = useRouter()
     const [currentDate, setCurrentDate] = useState(() => new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
     const [localLogs, setLocalLogs] = useState(logs);
@@ -144,14 +146,26 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
         const date = new Date(year, month, day);
         const ds = dateStr(day)
 
-        const exists = isLogged(habitId, day);
-        if (exists) {
+        const wasChecked = isLogged(habitId, day);
+        // Optimistic update: cambia el check inmediatamente
+        if (wasChecked) {
             setLocalLogs((prev) => prev.filter((l) => !(l.habitId === habitId && l.date.startsWith(ds))));
         } else {
             setLocalLogs((prev) => [...prev, { habitId, date: ds }]);
         }
 
-        await toggleHabitLog(habitId, date, userId);
+        try {
+            await toggleHabitLog(habitId, date, userId);
+            router.refresh()
+        } catch (err) {
+            // Si falla el servidor, revertimos el cambio visual
+            if (wasChecked) {
+                setLocalLogs((prev) => [...prev, { habitId, date: ds }]);
+            } else {
+                setLocalLogs((prev) => prev.filter((l) => !(l.habitId === habitId && l.date.startsWith(ds))));
+            }
+            console.error('Error al marcar hábito:', err)
+        }
     }
 
     async function handleSaveNote() {
