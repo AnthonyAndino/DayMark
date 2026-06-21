@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useTheme, presetThemes } from '@/lib/theme-context'
 import { useLang } from '@/lib/lang'
+import { getTodaySummary } from '@/lib/actions/habits'
 
 const CUSTOM_THEMES_KEY = 'daymark-custom-themes'
 
@@ -31,11 +32,7 @@ function LogoutIcon() {
 
 type PresetKey = keyof typeof presetThemes
 
-interface SidebarProps {
-    summary: { total: number; completed: number } | null
-}
-
-export default function Sidebar({ summary }: SidebarProps) {
+export default function Sidebar() {
     const pathname = usePathname()
     const router = useRouter()
     const { txt } = useLang()
@@ -44,6 +41,7 @@ export default function Sidebar({ summary }: SidebarProps) {
     const [customInput, setCustomInput] = useState('')
     const [customThemes, setCustomThemes] = useState<string[]>([])
     const [themesHydrated, setThemesHydrated] = useState(false)
+    const [summary, setSummary] = useState<{ total: number; completed: number } | null>(null)
     const { scheme, setPreset, setCustom } = useTheme()
 
     useEffect(() => {
@@ -68,6 +66,16 @@ export default function Sidebar({ summary }: SidebarProps) {
             localStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(customThemes))
         }
     }, [customThemes, themesHydrated])
+
+    useEffect(() => {
+        const fetchSummary = () => {
+            const localDate = new Intl.DateTimeFormat('en-CA').format(new Date())
+            getTodaySummary(localDate).then(setSummary)
+        }
+        fetchSummary()
+        const interval = setInterval(fetchSummary, 8000)
+        return () => clearInterval(interval)
+    }, [pathname])
 
     async function handleLogout() {
         setLoggingOut(true)

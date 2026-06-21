@@ -65,10 +65,6 @@ export async function getHabits() {
 export async function getTodaySummary(todayDate?: string) {
     const userId = await getUserId()
 
-    const total = await prisma.habit.count({
-        where: { userId }
-    })
-
     // todayDate viene del cliente como "YYYY-MM-DD" en su zona horaria local
     let today: Date
     if (todayDate) {
@@ -82,14 +78,28 @@ export async function getTodaySummary(todayDate?: string) {
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
 
+    const todayDay = today.getDay()
+
+    const allHabits = await prisma.habit.findMany({
+        where: { userId },
+        select: { id: true, daysOfWeek: true }
+    })
+
+    const applicableIds: number[] = []
+    for (const h of allHabits) {
+        const dow = h.daysOfWeek as number[] | null
+        if (dow && !dow.includes(todayDay)) continue
+        applicableIds.push(h.id)
+    }
+
     const completed = await prisma.habitLog.count({
         where: {
-            habit: { userId },
+            habitId: { in: applicableIds },
             date: { gte: today, lt: tomorrow }
         }
     })
 
-    return { total, completed }
+    return { total: applicableIds.length, completed }
 }
 
 export async function toggleHabitLog(habitId: number, dateStr: string, userId: number) {
