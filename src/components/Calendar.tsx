@@ -165,6 +165,7 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
                 setLocalLogs((prev) => prev.filter((l) => !(l.habitId === habitId && l.date.startsWith(ds))));
             }
             console.error('Error al marcar hábito:', err)
+            alert('Error al marcar: ' + (err instanceof Error ? err.message : String(err)))
         }
     }
 

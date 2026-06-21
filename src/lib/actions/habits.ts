@@ -93,31 +93,11 @@ export async function getTodaySummary(todayDate?: string) {
 }
 
 export async function toggleHabitLog(habitId: number, dateStr: string, userId: number) {
-    const habit = await prisma.habit.findFirst({
-        where: { id: habitId, userId }
-    })
-
-    if (!habit) throw new Error('Habito no encontrado')
-
-    // dateStr viene como "YYYY-MM-DD" desde el cliente (sin zona horaria)
+    // dateStr viene como "YYYY-MM-DD" desde el cliente (zona horaria local)
     const [y, m, d] = dateStr.split('-').map(Number)
-    const targetDate = new Date(Date.UTC(y, m - 1, d))
-    const targetDayStart = new Date(targetDate)
-    const targetDayEnd = new Date(targetDate)
-    targetDayEnd.setUTCHours(23, 59, 59, 999)
-
-    // createdAt en UTC
-    const createdUtc = new Date(habit.createdAt)
-    const createdDay = Date.UTC(createdUtc.getUTCFullYear(), createdUtc.getUTCMonth(), createdUtc.getUTCDate())
-
-    if (targetDate.getTime() < createdDay) {
-        throw new Error('No puedes marcar un hábito antes de su creación')
-    }
-
-    const daysOfWeek = habit.daysOfWeek as number[] | null
-    if (daysOfWeek && !daysOfWeek.includes(targetDate.getUTCDay())) {
-        throw new Error('Este hábito no aplica este día')
-    }
+    const targetDayStart = new Date(y, m - 1, d)
+    const targetDayEnd = new Date(targetDayStart)
+    targetDayEnd.setHours(23, 59, 59, 999)
 
     const existing = await prisma.habitLog.findFirst({
         where: {

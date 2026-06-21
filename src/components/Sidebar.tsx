@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useTheme, presetThemes } from '@/lib/theme-context'
 import { useLang } from '@/lib/lang'
-import { getTodaySummary } from '@/lib/actions/habits'
 
 const CUSTOM_THEMES_KEY = 'daymark-custom-themes'
 
@@ -32,7 +31,11 @@ function LogoutIcon() {
 
 type PresetKey = keyof typeof presetThemes
 
-export default function Sidebar() {
+interface SidebarProps {
+    summary: { total: number; completed: number } | null
+}
+
+export default function Sidebar({ summary }: SidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const { txt } = useLang()
@@ -41,7 +44,6 @@ export default function Sidebar() {
     const [customInput, setCustomInput] = useState('')
     const [customThemes, setCustomThemes] = useState<string[]>([])
     const [themesHydrated, setThemesHydrated] = useState(false)
-    const [summary, setSummary] = useState<{ total: number; completed: number } | null>(null)
     const { scheme, setPreset, setCustom } = useTheme()
 
     useEffect(() => {
@@ -66,12 +68,6 @@ export default function Sidebar() {
             localStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(customThemes))
         }
     }, [customThemes, themesHydrated])
-
-    useEffect(() => {
-        // Pasa la fecha local del cliente ("YYYY-MM-DD") para evitar problemas de zona horaria
-        const localDate = new Intl.DateTimeFormat('en-CA').format(new Date())
-        getTodaySummary(localDate).then(setSummary)
-    }, [])
 
     async function handleLogout() {
         setLoggingOut(true)
