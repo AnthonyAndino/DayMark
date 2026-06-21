@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useTheme, presetThemes } from '@/lib/theme-context'
 import { useLang } from '@/lib/lang'
+import { getTodaySummary } from '@/lib/actions/habits'
 
 const CUSTOM_THEMES_KEY = 'daymark-custom-themes'
 
@@ -40,6 +41,7 @@ export default function Sidebar() {
     const [customInput, setCustomInput] = useState('')
     const [customThemes, setCustomThemes] = useState<string[]>([])
     const [themesHydrated, setThemesHydrated] = useState(false)
+    const [summary, setSummary] = useState<{ total: number; completed: number } | null>(null)
     const { scheme, setPreset, setCustom } = useTheme()
 
     useEffect(() => {
@@ -64,6 +66,10 @@ export default function Sidebar() {
             localStorage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(customThemes))
         }
     }, [customThemes, themesHydrated])
+
+    useEffect(() => {
+        getTodaySummary().then(setSummary)
+    }, [])
 
     async function handleLogout() {
         setLoggingOut(true)
@@ -110,11 +116,25 @@ export default function Sidebar() {
 
     const presetKeys = Object.keys(presetThemes) as PresetKey[]
 
+    // Formatea la fecha de hoy en espanol, ejemplo: "martes, 20 de junio de 2026"
+    const todayStr = new Date().toLocaleDateString('es-ES', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    })
+
     return (
         <aside className="fixed left-0 top-0 h-full w-56 flex flex-col z-50" style={{ backgroundColor: 'var(--theme-bg)', borderRightWidth: 1, borderRightStyle: 'solid', borderRightColor: 'var(--theme-border)' }}>
             <div className="flex items-center gap-3 px-5 pt-8 pb-6" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
                 <DayMarkLogo />
                 <h1 className="text-sm tracking-[0.3em] font-bold uppercase" style={{ color: 'var(--theme-fg)' }}>DAYMARK</h1>
+            </div>
+
+            <div className="px-5 pt-2 pb-3" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
+                <p className="text-xs capitalize" style={{ color: 'var(--theme-muted)' }}>{todayStr}</p>
+                {summary && (
+                    <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--theme-fg)' }}>
+                        {summary.completed}/{summary.total} hábitos completados hoy
+                    </p>
+                )}
             </div>
 
             <nav className="flex flex-col gap-px px-3 py-6">

@@ -62,6 +62,29 @@ export async function getHabits() {
     })
 }
 
+export async function getTodaySummary() {
+    const userId = await getUserId()
+
+    const total = await prisma.habit.count({
+        where: { userId }
+    })
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+
+    const completed = await prisma.habitLog.count({
+        where: {
+            habit: { userId },
+            date: { gte: today, lt: tomorrow } 
+        }
+    })
+
+    return { total, completed }
+}
+
 export async function toggleHabitLog(habitId: number, date: Date, userId: number) {
     const habit = await prisma.habit.findFirst({
         where: { id: habitId, userId }
