@@ -143,7 +143,6 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
     }
 
     async function handleToggle(habitId: number, day: number) {
-        const date = new Date(year, month, day);
         const ds = dateStr(day)
 
         const wasChecked = isLogged(habitId, day);
@@ -155,7 +154,8 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
         }
 
         try {
-            await toggleHabitLog(habitId, date, userId);
+            // Pasamos "YYYY-MM-DD" como string para evitar problemas de zona horaria
+            await toggleHabitLog(habitId, ds, userId);
             router.refresh()
         } catch (err) {
             // Si falla el servidor, revertimos el cambio visual

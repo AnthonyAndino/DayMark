@@ -92,32 +92,37 @@ export async function getTodaySummary(todayDate?: string) {
     return { total, completed }
 }
 
-export async function toggleHabitLog(habitId: number, date: Date, userId: number) {
+export async function toggleHabitLog(habitId: number, dateStr: string, userId: number) {
     const habit = await prisma.habit.findFirst({
         where: { id: habitId, userId }
     })
 
     if (!habit) throw new Error('Habito no encontrado')
 
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
+    // dateStr viene como "YYYY-MM-DD" desde el cliente (sin zona horaria)
+    const [y, m, d] = dateStr.split('-').map(Number)
+    const targetDate = new Date(Date.UTC(y, m - 1, d))
+    const targetDayStart = new Date(targetDate)
+    const targetDayEnd = new Date(targetDate)
+    targetDayEnd.setUTCHours(23, 59, 59, 999)
 
-    if (startOfDay.getTime() < new Date(habit.createdAt).setHours(0, 0, 0, 0)) {
+    // createdAt en UTC
+    const createdUtc = new Date(habit.createdAt)
+    const createdDay = Date.UTC(createdUtc.getUTCFullYear(), createdUtc.getUTCMonth(), createdUtc.getUTCDate())
+
+    if (targetDate.getTime() < createdDay) {
         throw new Error('No puedes marcar un hábito antes de su creación')
     }
 
     const daysOfWeek = habit.daysOfWeek as number[] | null
-    if (daysOfWeek && !daysOfWeek.includes(startOfDay.getDay())) {
+    if (daysOfWeek && !daysOfWeek.includes(targetDate.getUTCDay())) {
         throw new Error('Este hábito no aplica este día')
     }
-
-    const endOfDay = new Date(startOfDay)
-    endOfDay.setHours(23, 59, 59, 999)
 
     const existing = await prisma.habitLog.findFirst({
         where: {
             habitId,
-            date: { gte: startOfDay, lte: endOfDay }
+            date: { gte: targetDayStart, lte: targetDayEnd }
         }
     })
 
@@ -126,7 +131,7 @@ export async function toggleHabitLog(habitId: number, date: Date, userId: number
         return { marked: false }
     } else {
         await prisma.habitLog.create({
-            data: { habitId, date: startOfDay }
+            data: { habitId, date: targetDayStart }
         })
         return { marked: true }
     }

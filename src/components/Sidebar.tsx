@@ -130,7 +130,7 @@ export default function Sidebar() {
                 <h1 className="text-sm tracking-[0.3em] font-bold uppercase" style={{ color: 'var(--theme-fg)' }}>DAYMARK</h1>
             </div>
 
-            <div className="px-5 pt-4 pb-4">
+            <div className="px-5 pt-4 pb-4" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
                 <p className="text-[10px] capitalize tracking-wider" style={{ color: 'var(--theme-muted)' }}>{todayStr}</p>
                 {summary && (
                     <p className="text-xs mt-1" style={{ color: 'var(--theme-fg)' }}>
