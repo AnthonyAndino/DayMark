@@ -62,23 +62,30 @@ export async function getHabits() {
     })
 }
 
-export async function getTodaySummary() {
+export async function getTodaySummary(todayDate?: string) {
     const userId = await getUserId()
 
     const total = await prisma.habit.count({
         where: { userId }
     })
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
+    // todayDate viene del cliente como "YYYY-MM-DD" en su zona horaria local
+    let today: Date
+    if (todayDate) {
+        const [y, m, d] = todayDate.split('-').map(Number)
+        today = new Date(y, m - 1, d)
+    } else {
+        today = new Date()
+        today.setHours(0, 0, 0, 0)
+    }
+
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
 
     const completed = await prisma.habitLog.count({
         where: {
             habit: { userId },
-            date: { gte: today, lt: tomorrow } 
+            date: { gte: today, lt: tomorrow }
         }
     })
 

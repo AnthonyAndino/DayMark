@@ -68,7 +68,9 @@ export default function Sidebar() {
     }, [customThemes, themesHydrated])
 
     useEffect(() => {
-        getTodaySummary().then(setSummary)
+        // Pasa la fecha local del cliente ("YYYY-MM-DD") para evitar problemas de zona horaria
+        const localDate = new Intl.DateTimeFormat('en-CA').format(new Date())
+        getTodaySummary(localDate).then(setSummary)
     }, [])
 
     async function handleLogout() {
@@ -128,11 +130,12 @@ export default function Sidebar() {
                 <h1 className="text-sm tracking-[0.3em] font-bold uppercase" style={{ color: 'var(--theme-fg)' }}>DAYMARK</h1>
             </div>
 
-            <div className="px-5 pt-2 pb-3" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
-                <p className="text-xs capitalize" style={{ color: 'var(--theme-muted)' }}>{todayStr}</p>
+            <div className="px-5 pt-4 pb-4">
+                <p className="text-[10px] capitalize tracking-wider" style={{ color: 'var(--theme-muted)' }}>{todayStr}</p>
                 {summary && (
-                    <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--theme-fg)' }}>
-                        {summary.completed}/{summary.total} hábitos completados hoy
+                    <p className="text-xs mt-1" style={{ color: 'var(--theme-fg)' }}>
+                        <span className="font-bold">{summary.completed}</span>
+                        <span style={{ color: 'var(--theme-muted)' }}>/{summary.total}</span> hábitos completados hoy
                     </p>
                 )}
             </div>
