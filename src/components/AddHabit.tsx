@@ -6,17 +6,13 @@ import { useRouter } from "next/navigation"
 import { useLang } from "@/lib/lang"
 import { useToast } from "@/lib/toast"
 
-interface Props {
-    userId: number
-}
-
 const OPTIONS: { label: string; desc: string; days: number[] | null }[] = [
     { label: 'Todos los días', desc: 'El hábito cuenta de lunes a domingo', days: null },
     { label: 'Lunes a viernes', desc: 'El hábito solo cuenta entre semana', days: [1, 2, 3, 4, 5] },
     { label: 'Fines de semana', desc: 'El hábito solo cuenta sábado y domingo', days: [0, 6] },
 ]
 
-export default function AddHabit({ userId }: Props) {
+export default function AddHabit() {
     const [name, setName] = useState('')
     const [step, setStep] = useState<'name' | 'schedule'>('name')
     const [loading, setLoading] = useState(false)
@@ -33,7 +29,7 @@ export default function AddHabit({ userId }: Props) {
     async function handlePickSchedule(days: number[] | null) {
         setLoading(true)
         try {
-            await createHabit({ name, userId, daysOfWeek: days ?? undefined })
+            await createHabit({ name, daysOfWeek: days ?? undefined })
             show(txt.habitCreated)
             setName('')
             setStep('name')

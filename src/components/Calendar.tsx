@@ -30,7 +30,6 @@ interface Props {
     logs: HabitLog[];
     notes: { date: string; content: string }[];
     streaks: Streak[];
-    userId: number;
     userName: string;
     habitId?: number;
 }
@@ -88,7 +87,7 @@ function habitAppliesOnDate(habit: Habit, year: number, month: number, day: numb
     return true
 }
 
-export default function Calendar({ habits, logs, notes, streaks, userId, userName, habitId }: Props) {
+export default function Calendar({ habits, logs, notes, streaks, userName, habitId }: Props) {
     const { lang, txt } = useLang()
     const { show } = useToast()
     const router = useRouter()
@@ -157,7 +156,7 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
 
         try {
             // Pasamos "YYYY-MM-DD" como string para evitar problemas de zona horaria
-            await toggleHabitLog(habitId, ds, userId);
+            await toggleHabitLog(habitId, ds);
             router.refresh()
         } catch (err) {
             // Si falla el servidor, revertimos el cambio visual

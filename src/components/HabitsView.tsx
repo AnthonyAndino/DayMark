@@ -29,7 +29,7 @@ function CalendarIcon() {
     )
 }
 
-export default function HabitsView({ habits, streaks, userId }: { habits: Habit[]; streaks: Streak[]; userId: number }) {
+export default function HabitsView({ habits, streaks }: { habits: Habit[]; streaks: Streak[] }) {
     const { txt } = useLang()
     const { show } = useToast()
     const router = useRouter()
@@ -50,7 +50,7 @@ export default function HabitsView({ habits, streaks, userId }: { habits: Habit[
 
     return (
         <div className="flex-1 flex flex-col overflow-hidden">
-            <AddHabit userId={userId} />
+            <AddHabit />
             {habits.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
                     <p className="text-[10px] tracking-widest" style={{ color: 'var(--theme-muted)' }}>

@@ -60,13 +60,12 @@ export default async function DashboardPage() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--theme-bg)', color: 'var(--theme-fg)' }}>
-            <AddHabit userId={userId} />
+            <AddHabit />
             <Calendar
                 habits={serializedHabits}
                 logs={serializedLogs}
                 notes={serializedNotes}
                 streaks={streakResults}
-                userId={userId}
                 userName={userName}
             />
         </div>

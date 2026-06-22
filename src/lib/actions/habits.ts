@@ -21,8 +21,9 @@ async function getUserId(): Promise<number> {
     return payload.userId
 }
 
-export async function createHabit(formData: { name: string; userId: number; daysOfWeek?: number[] }) {
-    const { name, userId, daysOfWeek } = HabitSchema.extend({ userId: z.number() }).parse(formData)
+export async function createHabit(formData: { name: string; daysOfWeek?: number[] }) {
+    const userId = await getUserId()
+    const { name, daysOfWeek } = HabitSchema.parse(formData)
 
     const habit = await prisma.habit.create({
         data: {
@@ -102,7 +103,9 @@ export async function getTodaySummary(todayDate?: string) {
     return { total: applicableIds.length, completed }
 }
 
-export async function toggleHabitLog(habitId: number, dateStr: string, userId: number) {
+export async function toggleHabitLog(habitId: number, dateStr: string) {
+    await getUserId() // verifica que el usuario está autenticado
+
     // dateStr viene como "YYYY-MM-DD" desde el cliente (zona horaria local)
     const [y, m, d] = dateStr.split('-').map(Number)
     const targetDayStart = new Date(y, m - 1, d)

@@ -32,7 +32,7 @@ export default async function HabitsPage() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: 'var(--theme-bg)', color: 'var(--theme-fg)' }}>
-            <HabitsView habits={serializedHabits} streaks={streaks} userId={userId} />
+            <HabitsView habits={serializedHabits} streaks={streaks} />
         </div>
     )
 }

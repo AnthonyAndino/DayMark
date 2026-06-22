@@ -82,7 +82,6 @@ export default async function HabitDetailPage(props: { params: Promise<{ id: str
                 logs={serializedLogs}
                 notes={serializedNotes}
                 streaks={[{ habitId: habit.id, count: streak }]}
-                userId={userId}
                 userName={userName}
                 habitId={habit.id}
             />
