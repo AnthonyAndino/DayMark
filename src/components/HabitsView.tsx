@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useLang } from '@/lib/lang'
+import { useToast } from '@/lib/toast'
 import { deleteHabit } from '@/lib/actions/habits'
 import AddHabit from './AddHabit'
 
@@ -30,6 +31,7 @@ function CalendarIcon() {
 
 export default function HabitsView({ habits, streaks, userId }: { habits: Habit[]; streaks: Streak[]; userId: number }) {
     const { txt } = useLang()
+    const { show } = useToast()
     const router = useRouter()
     const [deleting, setDeleting] = useState<number | null>(null)
 
@@ -37,9 +39,11 @@ export default function HabitsView({ habits, streaks, userId }: { habits: Habit[
         setDeleting(habitId)
         try {
             await deleteHabit(habitId)
+            show(txt.habitDeleted)
             router.refresh()
         } catch (err) {
             console.error(err)
+            show(txt.errorOccurred, 'error')
             setDeleting(null)
         }
     }

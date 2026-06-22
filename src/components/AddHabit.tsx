@@ -4,6 +4,7 @@ import { useState } from "react"
 import { createHabit } from "@/lib/actions/habits"
 import { useRouter } from "next/navigation"
 import { useLang } from "@/lib/lang"
+import { useToast } from "@/lib/toast"
 
 interface Props {
     userId: number
@@ -21,6 +22,7 @@ export default function AddHabit({ userId }: Props) {
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     const { txt } = useLang()
+    const { show } = useToast()
 
     function handleFirstSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -32,11 +34,13 @@ export default function AddHabit({ userId }: Props) {
         setLoading(true)
         try {
             await createHabit({ name, userId, daysOfWeek: days ?? undefined })
+            show(txt.habitCreated)
             setName('')
             setStep('name')
             router.refresh()
         } catch (err) {
             console.error(err)
+            show(txt.errorOccurred, 'error')
         } finally {
             setLoading(false)
         }

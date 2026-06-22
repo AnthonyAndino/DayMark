@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useLang } from '@/lib/lang'
+import { useToast } from '@/lib/toast'
 import { deleteNote } from '@/lib/actions/notes'
 
 interface Note { id?: number; date: string; content: string }
@@ -17,6 +18,7 @@ function XIcon() {
 
 export default function NotesView({ notes }: { notes: Note[] }) {
     const { lang, txt } = useLang()
+    const { show } = useToast()
     const router = useRouter()
     const [deleting, setDeleting] = useState<number | null>(null)
 
@@ -24,9 +26,11 @@ export default function NotesView({ notes }: { notes: Note[] }) {
         setDeleting(noteId)
         try {
             await deleteNote(noteId)
+            show(txt.noteDeleted)
             router.refresh()
         } catch (err) {
             console.error(err)
+            show(txt.errorOccurred, 'error')
             setDeleting(null)
         }
     }

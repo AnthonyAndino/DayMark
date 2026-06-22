@@ -89,6 +89,11 @@ export const dict = {
         alreadyAccount: 'Already have an account?',
         signInLink: 'Sign in',
         passwordsMismatch: 'Passwords do not match',
+        habitCreated: 'Habit created ✓',
+        habitDeleted: 'Habit deleted',
+        noteSaved: 'Note saved ✓',
+        noteDeleted: 'Note deleted',
+        errorOccurred: 'Error: could not save',
     },
     es: {
         dashboard: 'DASHBOARD',
@@ -166,6 +171,11 @@ export const dict = {
         alreadyAccount: '¿Ya tienes cuenta?',
         signInLink: 'Inicia sesión',
         passwordsMismatch: 'Las contraseñas no coinciden',
+        habitCreated: 'Hábito creado ✓',
+        habitDeleted: 'Hábito eliminado',
+        noteSaved: 'Nota guardada ✓',
+        noteDeleted: 'Nota eliminada',
+        errorOccurred: 'Error: no se pudo guardar',
     },
 }
 

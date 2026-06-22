@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { toggleHabitLog } from '@/lib/actions/habits';
 import { createNote } from '@/lib/actions/notes';
 import { useLang } from '@/lib/lang';
+import { useToast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -89,6 +90,7 @@ function habitAppliesOnDate(habit: Habit, year: number, month: number, day: numb
 
 export default function Calendar({ habits, logs, notes, streaks, userId, userName, habitId }: Props) {
     const { lang, txt } = useLang()
+    const { show } = useToast()
     const router = useRouter()
     const [currentDate, setCurrentDate] = useState(() => new Date());
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -165,7 +167,7 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
                 setLocalLogs((prev) => prev.filter((l) => !(l.habitId === habitId && l.date.startsWith(ds))));
             }
             console.error('Error al marcar hábito:', err)
-            alert('Error al marcar: ' + (err instanceof Error ? err.message : String(err)))
+            show(txt.errorOccurred, 'error')
         }
     }
 
@@ -175,10 +177,12 @@ export default function Calendar({ habits, logs, notes, streaks, userId, userNam
 
         try {
             await createNote({ content: noteContent, date: selectedDateStr });
+            show(txt.noteSaved)
             setLocalNotes(prev => [...prev, { date: selectedDateStr, content: noteContent }]);
             setNoteContent('');
         } catch (err) {
             console.error(err);
+            show(txt.errorOccurred, 'error')
         } finally {
             setSavingNote(false);
         }
