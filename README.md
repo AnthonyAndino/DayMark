@@ -83,7 +83,9 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:postgres@localhost:5432/daymark` |
-| `JWT_SECRET` | Secret key for JWT signing | *(change before production)* |
+| `JWT_SECRET` | Secret key for JWT signing | Generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
+
+Copy `.env.example` to `.env` and fill in your values.
 
 ## Project Structure
 
@@ -217,7 +219,9 @@ Abre [http://localhost:3000](http://localhost:3000) para ver la aplicación.
 | Variable | Descripción | Por defecto |
 |----------|-------------|-------------|
 | `DATABASE_URL` | Cadena de conexión de PostgreSQL | `postgresql://postgres:postgres@localhost:5432/daymark` |
-| `JWT_SECRET` | Clave secreta para la firma de JWT | *(cambiar antes de producción)* |
+| `JWT_SECRET` | Clave secreta para la firma de JWT | Generar con: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` |
+
+Copia `.env.example` a `.env` y completa tus valores.
 
 ## Estructura del Proyecto
 
