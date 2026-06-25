@@ -157,7 +157,7 @@ export async function getStreak(habitId: number): Promise<number> {
 
     const logs = await prisma.habitLog.findMany({
         where: { habitId },
-        orderBy: { date: 'asc' }
+        orderBy: { date: 'desc' }
     })
 
     if (logs.length === 0) return 0
