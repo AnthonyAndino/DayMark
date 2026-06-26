@@ -8,6 +8,7 @@ import { useLang } from '@/lib/lang'
 import { getTodaySummary } from '@/lib/actions/habits'
 
 const CUSTOM_THEMES_KEY = 'daymark-custom-themes'
+const SIDEBAR_KEY = 'daymark_sidebar_collapsed'
 
 function DayMarkLogo() {
     return (
@@ -42,7 +43,22 @@ export default function Sidebar() {
     const [customThemes, setCustomThemes] = useState<string[]>([])
     const [themesHydrated, setThemesHydrated] = useState(false)
     const [summary, setSummary] = useState<{ total: number; completed: number } | null>(null)
+    const [collapsed, setCollapsed] = useState(false)
+    const [collapsedHydrated, setCollapsedHydrated] = useState(false)
     const { scheme, setPreset, setCustom } = useTheme()
+
+    useEffect(() => {
+        const saved = localStorage.getItem(SIDEBAR_KEY)
+        if (saved === 'true') setCollapsed(true)
+        setCollapsedHydrated(true)
+    }, [])
+
+    useEffect(() => {
+        if (collapsedHydrated) {
+            localStorage.setItem(SIDEBAR_KEY, String(collapsed))
+            document.documentElement.style.setProperty('--sidebar-width', collapsed ? '56px' : '224px')
+        }
+    }, [collapsed, collapsedHydrated])
 
     useEffect(() => {
         if (themeOpen) setCustomInput(scheme.bg)
@@ -128,21 +144,38 @@ export default function Sidebar() {
     })
 
     return (
-        <aside className="fixed left-0 top-0 h-full w-56 flex flex-col z-50" style={{ backgroundColor: 'var(--theme-bg)', borderRightWidth: 1, borderRightStyle: 'solid', borderRightColor: 'var(--theme-border)' }}>
+        <aside className="fixed left-0 top-0 h-full flex flex-col z-50 transition-all duration-200" style={{ width: collapsed ? 56 : 224, backgroundColor: 'var(--theme-bg)', borderRightWidth: 1, borderRightStyle: 'solid', borderRightColor: 'var(--theme-border)' }}>
             <div className="flex items-center gap-3 px-5 pt-8 pb-6" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
                 <DayMarkLogo />
-                <h1 className="text-sm tracking-[0.3em] font-bold uppercase" style={{ color: 'var(--theme-fg)' }}>DAYMARK</h1>
+                {!collapsed && <h1 className="text-sm tracking-[0.3em] font-bold uppercase" style={{ color: 'var(--theme-fg)' }}>DAYMARK</h1>}
+                <button
+                    onClick={() => setCollapsed(p => !p)}
+                    className="ml-auto border border-transparent p-1 transition-all rounded-none"
+                    style={{ color: 'var(--theme-muted)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--theme-fg)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--theme-muted)' }}
+                    title={collapsed ? txt.dashboard : txt.dashboard}
+                >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2"
+                        className={`transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`}
+                    >
+                        <line x1="3" y1="6" x2="9" y2="6" />
+                        <polyline points="7,3 10,6 7,9" />
+                    </svg>
+                </button>
             </div>
 
-            <div className="px-5 pt-4 pb-4" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
-                <p className="text-[10px] capitalize tracking-wider" style={{ color: 'var(--theme-muted)' }}>{todayStr}</p>
-                {summary && (
-                    <p className="text-xs mt-1" style={{ color: 'var(--theme-fg)' }}>
-                        <span className="font-bold">{summary.completed}</span>
-                        <span style={{ color: 'var(--theme-muted)' }}>/{summary.total}</span> hábitos completados hoy
-                    </p>
-                )}
-            </div>
+            {!collapsed && (
+                <div className="px-5 pt-4 pb-4" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
+                    <p className="text-[10px] capitalize tracking-wider" style={{ color: 'var(--theme-muted)' }}>{todayStr}</p>
+                    {summary && (
+                        <p className="text-xs mt-1" style={{ color: 'var(--theme-fg)' }}>
+                            <span className="font-bold">{summary.completed}</span>
+                            <span style={{ color: 'var(--theme-muted)' }}>/{summary.total}</span> hábitos completados hoy
+                        </p>
+                    )}
+                </div>
+            )}
 
             <nav className="flex flex-col gap-px px-3 py-6">
                 {links.map((link) => {
@@ -151,6 +184,7 @@ export default function Sidebar() {
                         <Link
                             key={link.href}
                             href={link.href}
+                            title={collapsed ? link.label : undefined}
                             className="flex items-center gap-3 px-3 py-2.5 border text-sm transition-all rounded-none"
                             style={{
                                 borderColor: isActive ? 'var(--theme-accent)' : 'transparent',
@@ -161,7 +195,7 @@ export default function Sidebar() {
                             onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--theme-muted)' } }}
                         >
                             {link.icon(isActive)}
-                            <span className="text-xs tracking-widest uppercase">{link.label}</span>
+                            {!collapsed && <span className="text-xs tracking-widest uppercase">{link.label}</span>}
                         </Link>
                     )
                 })}
@@ -174,8 +208,9 @@ export default function Sidebar() {
                     style={{ color: 'var(--theme-muted)' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--theme-fg)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--theme-muted)' }}
+                    title={collapsed ? txt.theme : undefined}
                 >
-                    {txt.theme}
+                    {!collapsed && txt.theme}
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2"
                         className={`shrink-0 transition-transform duration-200 ${themeOpen ? 'rotate-90' : ''}`}
                     >
@@ -183,7 +218,7 @@ export default function Sidebar() {
                     </svg>
                 </button>
 
-                {themeOpen && (
+                {themeOpen && !collapsed && (
                     <div className="mt-3 space-y-3">
                         <div className="grid grid-cols-4 gap-2">
                             {presetKeys.map((key) => {
@@ -211,6 +246,7 @@ export default function Sidebar() {
                                     <button
                                         key={i}
                                         onClick={() => color && setCustom(color)}
+                                        title={color ?? txt.hexPlaceholder}
                                         className="w-full aspect-square border transition-all rounded-none flex items-center justify-center"
                                         style={{
                                             backgroundColor: color || 'transparent',
@@ -250,9 +286,10 @@ export default function Sidebar() {
                     style={{ color: 'var(--theme-muted)' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--theme-fg)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--theme-muted)' }}
+                    title={collapsed ? txt.logout : undefined}
                 >
                     <LogoutIcon />
-                    <span className="text-xs tracking-widest uppercase">{loggingOut ? `${txt.logout}...` : txt.logout}</span>
+                    {!collapsed && <span className="text-xs tracking-widest uppercase">{loggingOut ? `${txt.logout}...` : txt.logout}</span>}
                 </button>
             </div>
         </aside>
