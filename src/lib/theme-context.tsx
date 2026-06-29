@@ -19,6 +19,11 @@ export const presetThemes: Record<string, ThemeScheme & { label: string }> = {
     industrialGray: { bg: '#f5f5f5', fg: '#171717', border: '#d4d4d4', muted: '#a3a3a3', accent: '#171717', accentFg: '#ffffff', label: 'Gris Industrial' },
     pureBlack:    { bg: '#000000', fg: '#fafafa', border: '#333333', muted: '#737373', accent: '#fafafa', accentFg: '#0a0a0a', label: 'Negro Puro' },
     dracula:      { bg: '#282a36', fg: '#f8f8f2', border: '#44475a', muted: '#6272a4', accent: '#bd93f9', accentFg: '#0a0a0a', label: 'Dracula' },
+    nord:         { bg: '#2e3440', fg: '#eceff4', border: '#4c566a', muted: '#81a1c1', accent: '#88c0d0', accentFg: '#2e3440', label: 'Nord' },
+    solarized:    { bg: '#fdf6e3', fg: '#657b83', border: '#eee8d5', muted: '#93a1a1', accent: '#268bd2', accentFg: '#fdf6e3', label: 'Solarized' },
+    monokai:      { bg: '#272822', fg: '#f8f8f2', border: '#3e3d32', muted: '#75715e', accent: '#a6e22e', accentFg: '#272822', label: 'Monokai' },
+    catppuccin:   { bg: '#1e1e2e', fg: '#cdd6f4', border: '#313244', muted: '#6c7086', accent: '#89b4fa', accentFg: '#1e1e2e', label: 'Catppuccin' },
+    tokyoNight:   { bg: '#1a1b26', fg: '#c0caf5', border: '#33467c', muted: '#565f89', accent: '#7aa2f7', accentFg: '#1a1b26', label: 'Tokyo Night' },
 }
 
 const DEFAULT_BG = '#ffffff'
