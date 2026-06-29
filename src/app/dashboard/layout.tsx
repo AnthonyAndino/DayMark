@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <ThemeProvider>
             <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--theme-bg)' }}>
                 <Sidebar />
-                <main className="flex-1 ml-56 flex flex-col overflow-hidden" style={{ borderLeftWidth: 1, borderLeftStyle: 'solid', borderLeftColor: 'var(--theme-border)' }}>
+                <main className="flex-1 flex flex-col overflow-hidden transition-all duration-200" style={{ marginLeft: 'var(--sidebar-width, 224px)', borderLeftWidth: 1, borderLeftStyle: 'solid', borderLeftColor: 'var(--theme-border)' }}>
                     <div
                         className="flex items-center justify-end px-6 py-2 shrink-0"
                         style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}
