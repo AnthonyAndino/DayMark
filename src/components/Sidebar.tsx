@@ -145,24 +145,9 @@ export default function Sidebar() {
 
     return (
         <aside className="fixed left-0 top-0 h-full flex flex-col z-50 transition-all duration-200" style={{ width: collapsed ? 56 : 224, backgroundColor: 'var(--theme-bg)', borderRightWidth: 1, borderRightStyle: 'solid', borderRightColor: 'var(--theme-border)' }}>
-            <div className="flex items-center gap-3 px-5 pt-8 pb-6" style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
+            <div className={`flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-5'} pt-8 pb-6`} style={{ borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: 'var(--theme-border)' }}>
                 <DayMarkLogo />
                 {!collapsed && <h1 className="text-sm tracking-[0.3em] font-bold uppercase" style={{ color: 'var(--theme-fg)' }}>DAYMARK</h1>}
-                <button
-                    onClick={() => setCollapsed(p => !p)}
-                    className="ml-auto border border-transparent p-1 transition-all rounded-none"
-                    style={{ color: 'var(--theme-muted)' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--theme-fg)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--theme-muted)' }}
-                    title={collapsed ? txt.dashboard : txt.dashboard}
-                >
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.2"
-                        className={`transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`}
-                    >
-                        <line x1="3" y1="6" x2="9" y2="6" />
-                        <polyline points="7,3 10,6 7,9" />
-                    </svg>
-                </button>
             </div>
 
             {!collapsed && (
@@ -177,7 +162,7 @@ export default function Sidebar() {
                 </div>
             )}
 
-            <nav className="flex flex-col gap-px px-3 py-6">
+            <nav className="flex flex-col gap-px py-6">
                 {links.map((link) => {
                     const isActive = pathname === link.href
                     return (
@@ -185,7 +170,7 @@ export default function Sidebar() {
                             key={link.href}
                             href={link.href}
                             title={collapsed ? link.label : undefined}
-                            className="flex items-center gap-3 px-3 py-2.5 border text-sm transition-all rounded-none"
+                            className={`flex items-center text-sm transition-all rounded-none ${collapsed ? 'justify-center px-0 py-3' : 'gap-3 px-3 py-2.5'} border`}
                             style={{
                                 borderColor: isActive ? 'var(--theme-accent)' : 'transparent',
                                 backgroundColor: isActive ? 'var(--theme-accent)' : 'transparent',
@@ -204,7 +189,7 @@ export default function Sidebar() {
             <div className="px-3 py-3" style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'var(--theme-border)' }}>
                 <button
                     onClick={() => setThemeOpen(!themeOpen)}
-                    className="flex items-center justify-between w-full px-3 py-2 border border-transparent text-xs tracking-widest uppercase transition-all rounded-none"
+                    className={`flex items-center w-full border border-transparent text-xs tracking-widest uppercase transition-all rounded-none ${collapsed ? 'justify-center px-0 py-3' : 'justify-between px-3 py-2'}`}
                     style={{ color: 'var(--theme-muted)' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--theme-fg)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--theme-muted)' }}
@@ -280,9 +265,27 @@ export default function Sidebar() {
                 )}
             </div>
 
-            <div className="mt-auto px-3 py-4" style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'var(--theme-border)' }}>
+            <div style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'var(--theme-border)' }}>
+                <button
+                    onClick={() => setCollapsed(p => !p)}
+                    className={`flex items-center w-full border border-transparent text-xs tracking-widest uppercase transition-all rounded-none ${collapsed ? 'justify-center px-0 py-3' : 'justify-between px-3 py-2'}`}
+                    style={{ color: 'var(--theme-muted)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--theme-fg)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--theme-muted)' }}
+                    title={collapsed ? txt.dashboard : undefined}
+                >
+                    {!collapsed && <span className="text-xs tracking-widest uppercase">COLLAPSE</span>}
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2"
+                        className={`shrink-0 transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`}
+                    >
+                        <polyline points="8,3 5,6 2,3" />
+                    </svg>
+                </button>
+            </div>
+
+            <div className="px-3 py-4" style={{ borderTopWidth: 1, borderTopStyle: 'solid', borderTopColor: 'var(--theme-border)' }}>
                 <button onClick={handleLogout} disabled={loggingOut}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 border border-transparent text-sm transition-all rounded-none disabled:opacity-50"
+                    className={`flex items-center w-full border border-transparent text-sm transition-all rounded-none disabled:opacity-50 ${collapsed ? 'justify-center px-0 py-3' : 'gap-3 px-3 py-2.5'}`}
                     style={{ color: 'var(--theme-muted)' }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--theme-fg)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--theme-muted)' }}
