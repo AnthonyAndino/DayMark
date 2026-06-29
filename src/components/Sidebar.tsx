@@ -143,6 +143,67 @@ export default function Sidebar() {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     })
 
+    const themePanelContent = (
+        <div className="space-y-3">
+            <div className="grid grid-cols-4 gap-2">
+                {presetKeys.map((key) => {
+                    const t = presetThemes[key]
+                    return (
+                        <button
+                            key={key}
+                            onClick={() => setPreset(t)}
+                            title={t.label}
+                            className="w-full aspect-square border transition-all rounded-none"
+                            style={{
+                                backgroundColor: t.bg, borderColor: t.border,
+                                outline: scheme.bg === t.bg ? '2px solid var(--theme-accent)' : 'none',
+                                outlineOffset: 1,
+                            }}
+                        />
+                    )
+                })}
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+                {Array.from({ length: 4 }).map((_, i) => {
+                    const color = customThemes[i]
+                    return (
+                        <button
+                            key={i}
+                            onClick={() => color && setCustom(color)}
+                            title={color ?? txt.hexPlaceholder}
+                            className="w-full aspect-square border transition-all rounded-none flex items-center justify-center"
+                            style={{
+                                backgroundColor: color || 'transparent',
+                                borderColor: color ? 'var(--theme-border)' : 'var(--theme-muted)',
+                                borderStyle: color ? 'solid' : 'dashed',
+                                outline: color && scheme.bg === color ? '2px solid var(--theme-accent)' : 'none',
+                                outlineOffset: 1,
+                            }}
+                        >
+                            {!color && (
+                                <span className="text-[10px] leading-none" style={{ color: 'var(--theme-muted)' }}>+</span>
+                            )}
+                        </button>
+                    )
+                })}
+            </div>
+
+            <div className="flex gap-1">
+                <input type="text" value={customInput} onChange={(e) => setCustomInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleOK() }}
+                    placeholder={txt.hexPlaceholder}
+                    className="flex-1 border px-2 py-1 text-[10px] font-mono outline-none transition-colors rounded-none"
+                    style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-fg)', backgroundColor: 'var(--theme-bg)' }}
+                />
+                <button onClick={handleOK}
+                    className="px-2 py-1 text-[10px] tracking-widest uppercase font-semibold rounded-none"
+                    style={{ backgroundColor: 'var(--theme-accent)', color: 'var(--theme-accent-fg)' }}
+                >OK</button>
+            </div>
+        </div>
+    )
+
     return (
         <aside className="fixed left-0 top-0 h-full flex flex-col z-50 transition-all duration-200" style={{ width: collapsed ? 56 : 224, backgroundColor: 'var(--theme-bg)', borderRightWidth: 1, borderRightStyle: 'solid', borderRightColor: 'var(--theme-border)' }}>
                 <button
@@ -216,63 +277,35 @@ export default function Sidebar() {
                 </button>
 
                 {themeOpen && !collapsed && (
-                    <div className="mt-3 space-y-3">
-                        <div className="grid grid-cols-4 gap-2">
-                            {presetKeys.map((key) => {
-                                const t = presetThemes[key]
-                                return (
-                                    <button
-                                        key={key}
-                                        onClick={() => setPreset(t)}
-                                        title={t.label}
-                                        className="w-full aspect-square border transition-all rounded-none"
-                                        style={{
-                                            backgroundColor: t.bg, borderColor: t.border,
-                                            outline: scheme.bg === t.bg ? '2px solid var(--theme-accent)' : 'none',
-                                            outlineOffset: 1,
-                                        }}
-                                    />
-                                )
-                            })}
-                        </div>
+                    <div className="mt-3">
+                        {themePanelContent}
+                    </div>
+                )}
 
-                        <div className="grid grid-cols-4 gap-2">
-                            {Array.from({ length: 4 }).map((_, i) => {
-                                const color = customThemes[i]
-                                return (
-                                    <button
-                                        key={i}
-                                        onClick={() => color && setCustom(color)}
-                                        title={color ?? txt.hexPlaceholder}
-                                        className="w-full aspect-square border transition-all rounded-none flex items-center justify-center"
-                                        style={{
-                                            backgroundColor: color || 'transparent',
-                                            borderColor: color ? 'var(--theme-border)' : 'var(--theme-muted)',
-                                            borderStyle: color ? 'solid' : 'dashed',
-                                            outline: color && scheme.bg === color ? '2px solid var(--theme-accent)' : 'none',
-                                            outlineOffset: 1,
-                                        }}
-                                    >
-                                        {!color && (
-                                            <span className="text-[10px] leading-none" style={{ color: 'var(--theme-muted)' }}>+</span>
-                                        )}
-                                    </button>
-                                )
-                            })}
+                {themeOpen && collapsed && (
+                    <div className="fixed left-14 top-0 z-40 h-full overflow-y-auto p-4 border-r shadow-lg"
+                        style={{
+                            backgroundColor: 'var(--theme-bg)',
+                            borderColor: 'var(--theme-border)',
+                            width: 220,
+                        }}>
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-[10px] tracking-widest uppercase font-semibold" style={{ color: 'var(--theme-muted)' }}>
+                                {txt.theme}
+                            </p>
+                            <button onClick={() => setThemeOpen(false)}
+                                className="border border-transparent px-1.5 py-0.5 text-xs transition-colors rounded-none"
+                                style={{ color: 'var(--theme-muted)' }}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--theme-fg)'; e.currentTarget.style.borderColor = 'var(--theme-border)' }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--theme-muted)'; e.currentTarget.style.borderColor = 'transparent' }}
+                            >
+                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.2">
+                                    <line x1="2" y1="2" x2="8" y2="8" />
+                                    <line x1="8" y1="2" x2="2" y2="8" />
+                                </svg>
+                            </button>
                         </div>
-
-                        <div className="flex gap-1">
-                            <input type="text" value={customInput} onChange={(e) => setCustomInput(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') handleOK() }}
-                                placeholder={txt.hexPlaceholder}
-                                className="flex-1 border px-2 py-1 text-[10px] font-mono outline-none transition-colors rounded-none"
-                                style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-fg)', backgroundColor: 'var(--theme-bg)' }}
-                            />
-                            <button onClick={handleOK}
-                                className="px-2 py-1 text-[10px] tracking-widest uppercase font-semibold rounded-none"
-                                style={{ backgroundColor: 'var(--theme-accent)', color: 'var(--theme-accent-fg)' }}
-                            >OK</button>
-                        </div>
+                        {themePanelContent}
                     </div>
                 )}
             </div>
