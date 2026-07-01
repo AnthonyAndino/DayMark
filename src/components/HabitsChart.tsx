@@ -2,12 +2,14 @@
 
 import { useMemo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { useLang } from '@/lib/lang'
 
 interface Props {
     logs: { habitId: number; date: string }[]
 }
 
 export default function HabitsChart({ logs }: Props) {
+    const { txt } = useLang()
     const data = useMemo(() => {
         const now = new Date()
         const year = now.getFullYear()
@@ -67,7 +69,7 @@ export default function HabitsChart({ logs }: Props) {
                                         backgroundColor: 'var(--theme-bg)', color: 'var(--theme-fg)',
                                     }}
                                 >
-                                    Día {payload[0].payload.day}: {val} hábito{val !== 1 ? 's' : ''}
+                                    {txt.chartDay} {payload[0].payload.day}: {val} {txt.chartHabit}{val !== 1 ? 's' : ''}
                                 </div>
                             )
                         }}
