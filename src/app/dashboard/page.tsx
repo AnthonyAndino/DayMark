@@ -25,8 +25,8 @@ export default async function DashboardPage() {
     const userName = user.email.split('@')[0]
 
     const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+    const startOfMonth = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))
+    const endOfMonth = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999))
 
     const habits = await prisma.habit.findMany({
         where: { userId },

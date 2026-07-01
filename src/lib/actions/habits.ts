@@ -70,16 +70,16 @@ export async function getTodaySummary(todayDate?: string) {
     let today: Date
     if (todayDate) {
         const [y, m, d] = todayDate.split('-').map(Number)
-        today = new Date(y, m - 1, d)
+        today = new Date(Date.UTC(y, m - 1, d))
     } else {
         today = new Date()
-        today.setHours(0, 0, 0, 0)
+        today.setUTCHours(0, 0, 0, 0)
     }
 
     const tomorrow = new Date(today)
-    tomorrow.setDate(today.getDate() + 1)
+    tomorrow.setUTCDate(today.getUTCDate() + 1)
 
-    const todayDay = today.getDay()
+    const todayDay = today.getUTCDay()
 
     const allHabits = await prisma.habit.findMany({
         where: { userId },
@@ -104,18 +104,19 @@ export async function getTodaySummary(todayDate?: string) {
 }
 
 export async function toggleHabitLog(habitId: number, dateStr: string) {
-    await getUserId() // verifica que el usuario está autenticado
+    await getUserId()
 
-    // dateStr viene como "YYYY-MM-DD" desde el cliente (zona horaria local)
+    // Usamos Date.UTC para que la fecha sea consistente sin importar
+    // la zona horaria del servidor. Todas las fechas se almacenan como
+    // medianoche UTC (T00:00:00.000Z).
     const [y, m, d] = dateStr.split('-').map(Number)
-    const targetDayStart = new Date(y, m - 1, d)
-    const targetDayEnd = new Date(targetDayStart)
-    targetDayEnd.setHours(23, 59, 59, 999)
+    const targetDayStart = new Date(Date.UTC(y, m - 1, d))
+    const targetDayEnd = new Date(Date.UTC(y, m - 1, d + 1))
 
     const existing = await prisma.habitLog.findFirst({
         where: {
             habitId,
-            date: { gte: targetDayStart, lte: targetDayEnd }
+            date: { gte: targetDayStart, lt: targetDayEnd }
         }
     })
 
@@ -165,23 +166,23 @@ export async function getStreak(habitId: number): Promise<number> {
     const logSet = new Set<string>()
     for (const log of logs) {
         const d = new Date(log.date)
-        logSet.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`)
+        logSet.add(`${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`)
     }
 
     let streak = 0
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+    today.setUTCHours(0, 0, 0, 0)
+    const todayKey = `${today.getUTCFullYear()}-${today.getUTCMonth()}-${today.getUTCDate()}`
 
     if (!logSet.has(todayKey)) return 0
 
     for (let i = 0; ; i++) {
         const d = new Date(today)
-        d.setDate(today.getDate() - i)
+        d.setUTCDate(today.getUTCDate() - i)
 
-        if (daysOfWeek && !daysOfWeek.includes(d.getDay())) continue
+        if (daysOfWeek && !daysOfWeek.includes(d.getUTCDay())) continue
 
-        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+        const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`
         if (logSet.has(key)) {
             streak++
         } else {
@@ -203,8 +204,8 @@ export async function getHabitStats(habitId: number, year: number, month: number
 
     const daysOfWeek = habit.daysOfWeek as number[] | null
 
-    const startOfMonth = new Date(year, month, 1)
-    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
+    const startOfMonth = new Date(Date.UTC(year, month, 1))
+    const endOfMonth = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999))
 
     const logs = await prisma.habitLog.findMany({
         where: {
@@ -216,21 +217,21 @@ export async function getHabitStats(habitId: number, year: number, month: number
     const logDays = new Set<string>()
     for (const log of logs) {
         const d = new Date(log.date)
-        logDays.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`)
+        logDays.add(`${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`)
     }
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
     const createdAt = new Date(habit.createdAt)
     let scheduled = 0
     let completed = 0
 
     for (let day = 1; day <= daysInMonth; day++) {
-        const d = new Date(year, month, day)
-        if (d < new Date(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate())) continue
-        if (daysOfWeek && !daysOfWeek.includes(d.getDay())) continue
+        const d = new Date(Date.UTC(year, month, day))
+        if (d < new Date(Date.UTC(createdAt.getUTCFullYear(), createdAt.getUTCMonth(), createdAt.getUTCDate()))) continue
+        if (daysOfWeek && !daysOfWeek.includes(d.getUTCDay())) continue
 
         scheduled++
-        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+        const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`
         if (logDays.has(key)) completed++
     }
 

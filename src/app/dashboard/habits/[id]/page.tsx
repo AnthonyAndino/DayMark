@@ -35,8 +35,8 @@ export default async function HabitDetailPage(props: { params: Promise<{ id: str
     if (!habit) redirect('/dashboard/habits')
 
     const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)
+    const startOfMonth = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))
+    const endOfMonth = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999))
 
     const [logs, notes] = await Promise.all([
         prisma.habitLog.findMany({
