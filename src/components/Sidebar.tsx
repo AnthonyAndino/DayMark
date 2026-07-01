@@ -45,7 +45,14 @@ export default function Sidebar() {
     const [summary, setSummary] = useState<{ total: number; completed: number } | null>(null)
     const [collapsed, setCollapsed] = useState(false)
     const [collapsedHydrated, setCollapsedHydrated] = useState(false)
+    const [todayStr, setTodayStr] = useState('')
     const { scheme, setPreset, setCustom } = useTheme()
+
+    useEffect(() => {
+        setTodayStr(new Date().toLocaleDateString('es-ES', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        }))
+    }, [])
 
     useEffect(() => {
         const saved = localStorage.getItem(SIDEBAR_KEY)
@@ -137,11 +144,6 @@ export default function Sidebar() {
     ]
 
     const presetKeys = Object.keys(presetThemes) as PresetKey[]
-
-    // Formatea la fecha de hoy en espanol, ejemplo: "martes, 20 de junio de 2026"
-    const todayStr = new Date().toLocaleDateString('es-ES', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    })
 
     const themePanelContent = (
         <div className="space-y-3">
