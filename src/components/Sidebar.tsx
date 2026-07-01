@@ -93,7 +93,7 @@ export default function Sidebar() {
     useEffect(() => {
         const fetchSummary = () => {
             const localDate = new Intl.DateTimeFormat('en-CA').format(new Date())
-            getTodaySummary(localDate).then(setSummary)
+            getTodaySummary(localDate).then(setSummary).catch(() => setSummary(null))
         }
         fetchSummary()
         const interval = setInterval(fetchSummary, 8000)
